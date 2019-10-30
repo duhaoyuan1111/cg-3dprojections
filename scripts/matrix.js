@@ -233,43 +233,77 @@ class Vector extends Matrix {
 
 function mat4x4identity() {
     var result = new Matrix(4, 4);
-    
+    var identity = [[1,0,0,0],
+					[0,1,0,0],
+					[0,0,1,0],
+					[0,0,0,1]];
+	result.values = identity;
     return result;
 }
 
 function mat4x4translate(tx, ty, tz) {
     var result = new Matrix(4, 4);
-    
+	var translate = [[1,0,0,tx],
+					[0,1,0,ty],
+					[0,0,1,tz],
+					[0,0,0,1]];
+	result.values = translate;
     return result;
 }
 
 function mat4x4scale(sx, sy, sz) {
     var result = new Matrix(4, 4);
-    
+	var scale = [[sx,0,0,0],
+				[0,sy,0,0],
+				[0,0,sz,0],
+				[0,0,0,1]];
+    result.values = scale;
     return result;
 }
 
 function mat4x4rotatex(theta) {
     var result = new Matrix(4, 4);
-    
+	var sTheta = Math.sin(theta * Math.PI/180.0);
+	var cTheta = Math.cos(theta * Math.PI/180.0);
+   	var rotatex = [[1,0,0,0],
+		      	  [0,cTheta,-sTheta,0],
+				  [0,sTheta,cTheta,0],
+				  [0,0,0,1]];
+    result.values = rotatex;
     return result;
 }
 
 function mat4x4rotatey(theta) {
     var result = new Matrix(4, 4);
-    
+	var sTheta = Math.sin(theta * Math.PI/180.0);
+	var cTheta = Math.cos(theta * Math.PI/180.0);
+   	var rotatey = [[cTheta,0,sTheta,0],
+				  [0,1,0,0],
+				  [-sTheta,0,cTheta,0],
+				  [0,0,0,1]];
+    result.values = rotatey;
     return result;
 }
 
 function mat4x4rotatez(theta) {
     var result = new Matrix(4, 4);
-    
+	var sTheta = Math.sin(theta * Math.PI/180.0);
+	var cTheta = Math.cos(theta * Math.PI/180.0);
+   	var rotatez = [[cTheta,-sTheta,0,0],
+				  [sTheta,cTheta,0,0],
+				  [0,0,1,0],
+				  [0,0,0,1]];
+    result.values = rotatez;
     return result;
 }
 
 function mat4x4shearxy(shx, shy) {
     var result = new Matrix(4, 4);
-    
+    var shear = [[1,0,sha,0],
+				[0,1,shy,0],
+				[0,0,1,0],
+				[0,0,0,1]];
+	result.values = shear;
     return result;
 }
 
@@ -280,7 +314,38 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
     // 3. shear such that the DOP becomes parallel to the z-axis
     // 4. translate and scale into canonical view volume
     //    (x = [-1,1], y = [-1,1], z = [0,-1])
-    
+	
+	var t_matrix = new Matrix(4,4);
+	var r_matrix = new Matrix(4,4);
+	var Shear_matrix = new Matrix(4,4);
+	var Tpar_matrix = new Matrix(4,4);
+	var Spar_matrix = new Matrix(4,4);
+	
+	var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
+	t_matrix.values = translate;
+	
+	var u_axis = vup.cross(vpn);
+	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
+	r_matrix.values = rotate;
+	
+	var cwx = (clip.umin + clip.umax)/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
+	var cwy = (clip.vmin + clip.vmax)/2;
+	var dopx = cwx - prp.x;
+	var dopy = cwy - prp.y;
+	var dopz = 0 - prp.z;
+	var shx = -dopx/dopz;
+	var shy = -dopy/dopz;
+	var shpar = [[1,0,shx,0],[0,1,shy,0],[0,0,1,0],[0,0,0,1]];
+	Shear_matrix.values = shpar;
+	
+	var Tpar = [[1,0,0,-cwx],[0,1,0,-cwy],[0,0,1,-clip.front],[0,0,0,1]];
+	Tpar_matrix.values = Tpar;
+	
+	var Spar = [[2/(clip.umax - clip.umin),0,0,0],[0,2/(clip.vmax - clip.vmin),0,0],[0,0,1/(clip.front - clip.back),0],[0,0,0,1]];
+	Spar_matrix.values = Spar;
+	
+	var Npar = Matrix.multiply(Spar_matrix,Tpar_matrix,Shear_matrix,r_matrix,t_matrix);
+	return Npar;
 }
 
 function mat4x4perspective(vrp, vpn, vup, prp, clip) {
@@ -291,13 +356,48 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
     // 4. shear such that the center line of the view volume becomes the z-axis
     // 5. scale into canonical view volume (truncated pyramid)
     //    (x = [z,-z], y = [z,-z], z = [-z_min,-1])
-    
+	
+	var t_matrix = new Matrix(4,4);
+	var r_matrix = new Matrix(4,4);
+	var t_prp_matrix = new Matrix(4,4);
+	var Shear_matrix = new Matrix(4,4);
+	var Sper_matrix = new Matrix(4,4);
+	
+	var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
+	t_matrix.values = translate;
+	
+	var u_axis = vup.cross(vpn);
+	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
+	r_matrix.values = rotate;
+	
+	var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
+	t_prp_matrix.values = translateprp;
+	
+	var cwx = (clip.umin + clip.umax)/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
+	var cwy = (clip.vmin + clip.vmax)/2;
+	var dopx = cwx - prp.x;
+	var dopy = cwy - prp.y;
+	var dopz = 0 - prp.z;
+	var shx = -dopx/dopz;
+	var shy = -dopy/dopz;
+	var shpar = [[1,0,shx,0],[0,1,shy,0],[0,0,1,0],[0,0,0,1]];
+	Shear_matrix.values = shpar;
+	
+	var sperx = 2*(-prp.z)/((clip.umax - clip.umin)*(-prp.z + clip.back));
+	var spery = 2*(-prp.z)/((clip.vmax - clip.vmin)*(-prp.z + clip.back));
+	var sperz = -1/(-prp.z + clip.back);
+	var sper = [[sperx,0,0,0],[0,spery,0,0],[0,0,sperz,0],[0,0,0,1]];
+	Sper_matrix.values = sper;
+	
+	var Nper = Matrix.multiply(Sper_matrix,Shear_matrix,t_prp_matrix,r_matrix,t_matrix);
+	return Nper;
 }
 
 function mat4x4mper(near) {
     // convert perspective canonical view volume into the parallel one
     var result = new Matrix(4, 4);
-    
+	var mper = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,-1,0]];
+	result.values = mper;
     return result;
 }
 

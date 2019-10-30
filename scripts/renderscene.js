@@ -58,6 +58,67 @@ function Init() {
 
 // Main drawing code here! Use information contained in variable `scene`
 function DrawScene() {
+	
+	//outcodes
+	var x = prp.x;
+	var y = prp.y;
+	var z = prp.z;
+	var zmin = -(-z+clip.front)/(-z+clip.back);
+	var code = 0;
+	if(type.equals("perspective")) {
+		if(x<z) {
+			code += 32; //left
+		} else if(x>-z) {
+			code += 16; //right
+		} else {
+			code += 0;
+		}
+		
+		if(y<z) {
+			code += 8; //below
+		} else if(y>-z) {
+			code += 4; //above
+		} else {
+			code +=0;
+		}
+		
+		if(z>zmin) {
+			code += 2; //infront
+		} else if(z<-1) {
+			code += 1; //inback
+		} else {
+			code += 0;
+		}
+	} else {
+		if(x<-1) {
+			code += 32; //left
+		} else if(x>1) {
+			code += 16; //right
+		} else {
+			code += 0;
+		}
+		
+		if(y<-1) {
+			code += 8; //below
+		} else if(y>1) {
+			code += 4; //above
+		} else {
+			code +=0;
+		}
+		
+		if(z>0) {
+			code += 2; //infront
+		} else if(z<-1) {
+			code += 1; //inback
+		} else {
+			code += 0;
+		}
+	}
+	//clipping
+	
+	
+	//mper
+	//mat4x4mper(near)
     console.log(scene);
 }
 
