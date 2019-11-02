@@ -59,13 +59,30 @@ function Init() {
 // Main drawing code here! Use information contained in variable `scene`
 function DrawScene() {
 	
+	//var aaa = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
+	//console.log(scene.view.vrp);
+	
+	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
+	
 	//outcodes
-	var x = prp.x;
-	var y = prp.y;
-	var z = prp.z;
-	var zmin = -(-z+clip.front)/(-z+clip.back);
+
+	//clipping
+	
+	
+	
+	
+	//mper
+	//mat4x4mper(near)
+    console.log(scene);
+}
+
+function GetOutcode(vertices,zmin){
+	var x = vertices.x;
+	var y = vertices.y;
+	var z = vertices.z;
+	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
 	var code = 0;
-	if(type.equals("perspective")) {
+	if(scene.view.type == "perspective") {
 		if(x<z) {
 			code += 32; //left
 		} else if(x>-z) {
@@ -89,7 +106,7 @@ function DrawScene() {
 		} else {
 			code += 0;
 		}
-	} else {
+	} else { //parallel
 		if(x<-1) {
 			code += 32; //left
 		} else if(x>1) {
@@ -114,12 +131,96 @@ function DrawScene() {
 			code += 0;
 		}
 	}
-	//clipping
+	return code;
+}
+function clipping(pt0,pt1,view){
 	
+	var left = 32;
+	var right = 16;
+	var bottom = 8;
+	var top = 4;
+	var near = 2;
+	var far = 1;
+	var pt0_array = [];
+	var pt1_array = [];
 	
-	//mper
-	//mat4x4mper(near)
-    console.log(scene);
+	var zmin = -(-z+view.clip[4])/(-z+view.clip[5]);
+	var codeA = GetOutcode(pt0,zmin);
+	var codeB = GetOutcode(pt1,zmin);
+	
+	var deltax = pt1.x-pt0.x;
+	var deltay = pt1.y-py0.y;
+	var deltaz = pt1.z-py0.z;
+	var done = false;
+	while(!done){
+		var OR = (codeA | codeB);
+		var And = (codeA & codeB);
+
+		if(OR == 0){
+			done = true;
+			result.pt0.x = pt0.x;
+			result.pt0.y = pt0.y;
+			result.pt0.z = pt0.z;
+			result.pt1.x = pt1.x;
+			result.pt1.y = pt1.y;
+			result.pt1.z = pt1.z;
+
+		}else if(And != 0){
+			done = true;
+			result = null;
+		}else{
+			var select_pt;
+			var select_code;
+			if(codeA>0){
+				select_pt = pt0;
+				select_code = codeA;
+			}else{
+				select_pt = pt1;
+				select_code = codeB;
+			}
+			if((select_code & left) === left){
+				let t = (-select_pt.x+select_pt.z)/(deltax-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & right) === right){
+				let t = (select_pt.x+select_pt.z)/(-deltax-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & bottom) === bottom){
+				let t = (-select_pt.y+select_pt.z)/(deltay-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & top) === top){
+				let t = (select_pt.y+select_pt.z)/(-deltay-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & near) === near){
+				let t = (select_pt.z-zmin)/(-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & far) === far){
+				let t = (-select_pt.z-1)/(deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}
+			select_code = GetOutcode(select_pt,view);
+			if(codeA>0){
+				codeA = select_code;
+			}else{
+				codeB = select_code;
+			}
+		}
+	}
+	var pt_0 = Vector4(pt0_array[0],pt0_array[1],pt0_array[2],1);
+	var pt_1 = Vector4(pt1_array[0],pt1_array[1],pt1_array[2],1);
+	var result = {pt_0,pt_1};
+	return result;
 }
 
 // Called when user selects a new scene JSON file

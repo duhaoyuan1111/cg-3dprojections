@@ -328,8 +328,8 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
 	r_matrix.values = rotate;
 	
-	var cwx = (clip.umin + clip.umax)/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
-	var cwy = (clip.vmin + clip.vmax)/2;
+	var cwx = (clip[0] + clip[1])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
+	var cwy = (clip[2] + clip[3])/2;
 	var dopx = cwx - prp.x;
 	var dopy = cwy - prp.y;
 	var dopz = 0 - prp.z;
@@ -338,10 +338,10 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var shpar = [[1,0,shx,0],[0,1,shy,0],[0,0,1,0],[0,0,0,1]];
 	Shear_matrix.values = shpar;
 	
-	var Tpar = [[1,0,0,-cwx],[0,1,0,-cwy],[0,0,1,-clip.front],[0,0,0,1]];
+	var Tpar = [[1,0,0,-cwx],[0,1,0,-cwy],[0,0,1,-clip[4]],[0,0,0,1]];
 	Tpar_matrix.values = Tpar;
 	
-	var Spar = [[2/(clip.umax - clip.umin),0,0,0],[0,2/(clip.vmax - clip.vmin),0,0],[0,0,1/(clip.front - clip.back),0],[0,0,0,1]];
+	var Spar = [[2/(clip[1] - clip[0]),0,0,0],[0,2/(clip[3] - clip[2]),0,0],[0,0,1/(clip[4] - clip[5]),0],[0,0,0,1]];
 	Spar_matrix.values = Spar;
 	
 	var Npar = Matrix.multiply(Spar_matrix,Tpar_matrix,Shear_matrix,r_matrix,t_matrix);
@@ -373,23 +373,28 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
 	t_prp_matrix.values = translateprp;
 	
-	var cwx = (clip.umin + clip.umax)/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
-	var cwy = (clip.vmin + clip.vmax)/2;
-	var dopx = cwx - prp.x;
-	var dopy = cwy - prp.y;
-	var dopz = 0 - prp.z;
+	//var cwx = (clip[1] + clip[0])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
+	//var cwy = (clip[2] + clip[3])/2;
+	//var dopx = cwx - prp.x;
+	//var dopy = cwy - prp.y;
+	//var dopz = 0 - prp.z;
+	var dopx = prp.x;
+	var dopy = prp.y;
+	var dopz = prp.z;
 	var shx = -dopx/dopz;
 	var shy = -dopy/dopz;
+	
 	var shpar = [[1,0,shx,0],[0,1,shy,0],[0,0,1,0],[0,0,0,1]];
 	Shear_matrix.values = shpar;
-	
-	var sperx = 2*(-prp.z)/((clip.umax - clip.umin)*(-prp.z + clip.back));
-	var spery = 2*(-prp.z)/((clip.vmax - clip.vmin)*(-prp.z + clip.back));
-	var sperz = -1/(-prp.z + clip.back);
+	//console.log(Shear_matrix.data);
+	var sperx = 2*(-prp.z)/((clip[1] - clip[0])*(-prp.z + clip[5]));
+	var spery = 2*(-prp.z)/((clip[3] - clip[2])*(-prp.z + clip[5]));
+	var sperz = -1/(-prp.z + clip[5]);
 	var sper = [[sperx,0,0,0],[0,spery,0,0],[0,0,sperz,0],[0,0,0,1]];
 	Sper_matrix.values = sper;
 	
 	var Nper = Matrix.multiply(Sper_matrix,Shear_matrix,t_prp_matrix,r_matrix,t_matrix);
+	//console.log(Nper);
 	return Nper;
 }
 
