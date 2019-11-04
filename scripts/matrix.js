@@ -373,28 +373,26 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
 	t_prp_matrix.values = translateprp;
 	
-	//var cwx = (clip[1] + clip[0])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
-	//var cwy = (clip[2] + clip[3])/2;
-	//var dopx = cwx - prp.x;
-	//var dopy = cwy - prp.y;
-	//var dopz = 0 - prp.z;
-	var dopx = prp.x;
-	var dopy = prp.y;
-	var dopz = prp.z;
+	var cwx = (clip[1] + clip[0])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
+	var cwy = (clip[2] + clip[3])/2;
+	var dopx = cwx - prp.x;
+	var dopy = cwy - prp.y;
+	var dopz = 0 - prp.z;
+	//var dopx = prp.x;
+	//var dopy = prp.y;
+	//var dopz = prp.z;
 	var shx = -dopx/dopz;
 	var shy = -dopy/dopz;
 	
 	var shpar = [[1,0,shx,0],[0,1,shy,0],[0,0,1,0],[0,0,0,1]];
 	Shear_matrix.values = shpar;
-	//console.log(Shear_matrix.data);
 	var sperx = 2*(-prp.z)/((clip[1] - clip[0])*(-prp.z + clip[5]));
 	var spery = 2*(-prp.z)/((clip[3] - clip[2])*(-prp.z + clip[5]));
 	var sperz = -1/(-prp.z + clip[5]);
 	var sper = [[sperx,0,0,0],[0,spery,0,0],[0,0,sperz,0],[0,0,0,1]];
 	Sper_matrix.values = sper;
 	
-	var Nper = Matrix.multiply(Sper_matrix,Shear_matrix,t_prp_matrix,r_matrix,t_matrix);
-	//console.log(Nper);
+	var Nper = Sper_matrix.mult(Shear_matrix.mult(t_prp_matrix.mult(r_matrix.mult(t_matrix))));
 	return Nper;
 }
 
