@@ -328,10 +328,12 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
 	r_matrix.values = rotate;
 	
+	
 	var cwx = (clip[0] + clip[1])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
 	var cwy = (clip[2] + clip[3])/2;
 	var dopx = cwx - prp.x;
 	var dopy = cwy - prp.y;
+	// PROBLEM
 	var dopz = 0 - prp.z;
 	var shx = -dopx/dopz;
 	var shy = -dopy/dopz;
@@ -344,7 +346,7 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var Spar = [[2/(clip[1] - clip[0]),0,0,0],[0,2/(clip[3] - clip[2]),0,0],[0,0,1/(clip[4] - clip[5]),0],[0,0,0,1]];
 	Spar_matrix.values = Spar;
 	
-	var Npar = Matrix.multiply(Spar_matrix,Tpar_matrix,Shear_matrix,r_matrix,t_matrix);
+	var Npar = Spar_matrix.mult(Tpar_matrix.mult(Shear_matrix.mult(r_matrix.mult(t_matrix))));
 	return Npar;
 }
 
