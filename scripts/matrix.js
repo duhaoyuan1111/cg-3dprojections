@@ -299,7 +299,7 @@ function mat4x4rotatez(theta) {
 
 function mat4x4shearxy(shx, shy) {
     var result = new Matrix(4, 4);
-    var shear = [[1,0,sha,0],
+    var shear = [[1,0,shx,0],
 				[0,1,shy,0],
 				[0,0,1,0],
 				[0,0,0,1]];
