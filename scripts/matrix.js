@@ -358,7 +358,11 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
     // 4. shear such that the center line of the view volume becomes the z-axis
     // 5. scale into canonical view volume (truncated pyramid)
     //    (x = [z,-z], y = [z,-z], z = [-z_min,-1])
-	
+	vpn.normalize();
+	var n_axis = vpn;
+	var u_axis = vup.cross(n_axis);
+	u_axis.normalize();
+	var v_axis = n_axis.cross(u_axis);
 	var t_matrix = new Matrix(4,4);
 	var r_matrix = new Matrix(4,4);
 	var t_prp_matrix = new Matrix(4,4);
@@ -368,8 +372,7 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
 	t_matrix.values = translate;
 	
-	var u_axis = vup.cross(vpn);
-	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
+	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[v_axis.x,v_axis.y,v_axis.z,0],[n_axis.x,n_axis.y,n_axis.z,0],[0,0,0,1]];
 	r_matrix.values = rotate;
 	
 	var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
@@ -395,6 +398,7 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	Sper_matrix.values = sper;
 	
 	var Nper = Sper_matrix.mult(Shear_matrix.mult(t_prp_matrix.mult(r_matrix.mult(t_matrix))));
+	console.log(Nper);
 	return Nper;
 }
 

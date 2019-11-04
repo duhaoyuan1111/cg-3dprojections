@@ -72,8 +72,8 @@ function DrawScene() {
 	
 	
 	//mper
-	//mat4x4mper(near)
-    console.log(scene);
+	var matrixx = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip); 
+   
 }
 
 function GetOutcode(vertices,zmin){
