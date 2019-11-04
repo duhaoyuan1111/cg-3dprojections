@@ -405,8 +405,7 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 function mat4x4mper(near) {
     // convert perspective canonical view volume into the parallel one
     var result = new Matrix(4, 4);
-	var mper = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,1/near,0]];
-	result.values = mper;
+	result.values = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,1/near,0]];
     return result;
 }
 

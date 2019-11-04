@@ -59,7 +59,13 @@ function Init() {
 // Main drawing code here! Use information contained in variable `scene`
 function DrawScene() {
 	
-	//var aaa = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
+	var v_matrix = new Matrix(4,4);
+	v_matrix.values = [[view.width/2, 0, 0, view.width/2],[0, view.height/2, 0, view.height/2],[0,0,1,0],[0,0,0,1]];
+	
+	
+	
+	
+	
 	
 	
 	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
@@ -68,11 +74,10 @@ function DrawScene() {
 		var matrix_Array = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		
-		var mper = new Matrix(4,4);
-		
+		var mper = mat4x4mper(-1);
 		for (let i = 0; i < scene.models[0].vertices.length; i++) {
-			mper.values = mat4x4mper(-1);
-			matrix_Array[i] = mper.mult(Nper.mult(scene.models[0].vertices[i]));
+			
+			matrix_Array[i] = v_matrix.mult(mper.mult(Nper.mult(scene.models[0].vertices[i])));
 		}
 		
 		
