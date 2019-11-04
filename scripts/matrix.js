@@ -334,6 +334,10 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var dopx = cwx - prp.x;
 	var dopy = cwy - prp.y;
 	// PROBLEM
+	
+	//{var dopx = prp.x;
+	//var dopy = prp.y;
+	//var dopz = prp.z;}
 	var dopz = 0 - prp.z;
 	var shx = -dopx/dopz;
 	var shy = -dopy/dopz;
@@ -383,9 +387,6 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	var dopx = cwx - prp.x;
 	var dopy = cwy - prp.y;
 	var dopz = 0 - prp.z;
-	//var dopx = prp.x;
-	//var dopy = prp.y;
-	//var dopz = prp.z;
 	var shx = -dopx/dopz;
 	var shy = -dopy/dopz;
 	
@@ -398,14 +399,13 @@ function mat4x4perspective(vrp, vpn, vup, prp, clip) {
 	Sper_matrix.values = sper;
 	
 	var Nper = Sper_matrix.mult(Shear_matrix.mult(t_prp_matrix.mult(r_matrix.mult(t_matrix))));
-	console.log(Nper);
 	return Nper;
 }
 
 function mat4x4mper(near) {
     // convert perspective canonical view volume into the parallel one
     var result = new Matrix(4, 4);
-	var mper = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,-1,0]];
+	var mper = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,1/near,0]];
 	result.values = mper;
     return result;
 }

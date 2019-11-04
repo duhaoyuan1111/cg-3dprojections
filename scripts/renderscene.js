@@ -60,14 +60,42 @@ function Init() {
 function DrawScene() {
 	
 	//var aaa = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
-	//console.log(scene.view.vrp);
+	
 	
 	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
-	
-	//outcodes
-
-	//clipping
-	
+	if (scene.view.type === 'perspective') {
+		var vector_Array = [];
+		var matrix_Array = [];
+		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
+		
+		var mper = new Matrix(4,4);
+		
+		for (let i = 0; i < scene.models[0].vertices.length; i++) {
+			mper.values = mat4x4mper(-1);
+			matrix_Array[i] = mper.mult(Nper.mult(scene.models[0].vertices[i]));
+		}
+		
+		
+		
+		
+		
+		for (let j = 0; j < matrix_Array.length; j++) {
+			var v_x = matrix_Array[j].values[0][0];
+			var v_y = matrix_Array[j].values[1][0];
+			var v_z = matrix_Array[j].values[2][0];
+			var v_w = matrix_Array[j].values[3][0];
+			var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
+			vector_Array[j] = vectorAfterMper;
+		}
+		
+		for (let k = 0; k < scene.models.length; k++) {
+			for (let m = 0; m < scene.models[k].edges.length; m++) {
+				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
+					DrawLine(vector_Array[scene.models[k].edges[m][n]].x, vector_Array[scene.models[k].edges[m][n]].y, vector_Array[scene.models[k].edges[m][n+1]].x, vector_Array[scene.models[k].edges[m][n+1]].y);
+				}
+			}
+		}
+	}
 	
 	
 	
