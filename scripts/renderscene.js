@@ -100,7 +100,7 @@ function DrawScene() {
 				}
 			}
 		}
-	} else {
+	} else { // parallel
 		var vector_Array = [];
 		var matrix_Array = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
@@ -308,16 +308,17 @@ function LoadNewScene() {
             } else if (scene.models[i].type === 'cube') {
 				var width = scene.models[i].width;
 				var height = scene.models[i].height;
+				var depth = scene.models[i].depth;
 				var center = scene.models[i].center;
 				// vertices
-				var v0 = Vector4(scene.models[i].center[0]-height/2,  scene.models[i].center[1]-height/2, scene.models[i].center[2]+height/2,1);
-				var v1 = Vector4(scene.models[i].center[0]+height/2,  scene.models[i].center[1]-height/2, scene.models[i].center[2]+height/2,1);
-				var v2 = Vector4(scene.models[i].center[0]+height/2,  scene.models[i].center[1]+height/2, scene.models[i].center[2]+height/2,1);
-				var v3 = Vector4(scene.models[i].center[0]-height/2,  scene.models[i].center[1]+height/2, scene.models[i].center[2]+height/2,1);
-				var v4 = Vector4(scene.models[i].center[0]-height/2,  scene.models[i].center[1]-height/2, scene.models[i].center[2]-height/2,1);
-				var v5 = Vector4(scene.models[i].center[0]+height/2,  scene.models[i].center[1]-height/2, scene.models[i].center[2]-height/2,1);
-				var v6 = Vector4(scene.models[i].center[0]+height/2,  scene.models[i].center[1]+height/2, scene.models[i].center[2]-height/2,1);
-				var v7 = Vector4(scene.models[i].center[0]-height/2,  scene.models[i].center[1]+height/2, scene.models[i].center[2]-height/2,1);
+				var v0 = Vector4(scene.models[i].center[0]-width/2, scene.models[i].center[1]-height/2, scene.models[i].center[2]+depth/2,1);
+				var v1 = Vector4(scene.models[i].center[0]+width/2, scene.models[i].center[1]-height/2, scene.models[i].center[2]+depth/2,1);
+				var v2 = Vector4(scene.models[i].center[0]+width/2, scene.models[i].center[1]+height/2, scene.models[i].center[2]+depth/2,1);
+				var v3 = Vector4(scene.models[i].center[0]-width/2, scene.models[i].center[1]+height/2, scene.models[i].center[2]+depth/2,1);
+				var v4 = Vector4(scene.models[i].center[0]-width/2, scene.models[i].center[1]-height/2, scene.models[i].center[2]-depth/2,1);
+				var v5 = Vector4(scene.models[i].center[0]+width/2, scene.models[i].center[1]-height/2, scene.models[i].center[2]-depth/2,1);
+				var v6 = Vector4(scene.models[i].center[0]+width/2, scene.models[i].center[1]+height/2, scene.models[i].center[2]-depth/2,1);
+				var v7 = Vector4(scene.models[i].center[0]-width/2, scene.models[i].center[1]+height/2, scene.models[i].center[2]-depth/2,1);
 				scene.models[i].vertices = [v0,v1,v2,v3,v4,v5,v6,v7];
 				// edges
 				scene.models[i].edges = [[0,1,2,3,0],[4,5,6,7,4],[0,4],[1,5],[2,6],[3,7]];
@@ -328,35 +329,27 @@ function LoadNewScene() {
 				var sides = scene.models[i].sides;
 				var rotate = mat4x4rotatey(360/sides);
 				// vertices
-				var v_BottomZero = Vector4(center[0]-radius*Math.sin((360/sides)*(Math.PI/180.0)),center[1]-height/2,center[2]+radius*Math.cos((360/sides)*(Math.PI/180.0)),1);
 				scene.models[i].vertices = [];
-				scene.models[i].vertices[0] = v_BottomZero;
-				for(let j = 1; j<sides;j++ ){
-					var bottomvs = rotate.mult(v_BottomZero);
-					v_BottomZero = bottomvs;
-					scene.models[i].vertices[j] = bottomvs;
+				for(let j = 0; j<sides; j++) {
+					scene.models[i].vertices.push(Vector4(center[0]+radius*Math.cos(j*2*Math.PI/sides),center[1]-height/2,center[2]-radius*Math.sin(j*2*Math.PI/sides),1));
 				}
-				var v_TopZero = Vector4(center[0]-radius*Math.sin((360/sides)*(Math.PI/180.0)),center[1]+height/2,center[2]+radius*Math.cos((360/sides)*(Math.PI/180.0)),1);
-				scene.models[i].vertices[sides] = v_TopZero;
-				for(let j= 1; j<sides;j++ ){
-					var topvs = rotate.mult(v_TopZero);
-					v_TopZero = topvs;
-					scene.models[i].vertices[j] = topvs;
+				for(let k = 0; k<sides; k++) {
+					scene.models[i].vertices.push(Vector4(center[0]+radius*Math.cos(k*2*Math.PI/sides),center[1]+height/2,center[2]-radius*Math.sin(k*2*Math.PI/sides),1));
 				}
 				// edges
 				scene.models[i].edges = [];
-				for(let j= 0; j<((scene.models[i].vertices.length)/2)+2;j++) {
+				for(let j = 0; j<((scene.models[i].vertices.length)/2)+2; j++) {
 					scene.models[i].edges[j] = [];
 				}
-				for(let j= 0; j<(scene.models[i].vertices.length)/2;j++){
+				for(let j = 0; j<(scene.models[i].vertices.length)/2; j++) {
 					scene.models[i].edges[0][j] = j;
 				}
 				scene.models[i].edges[0][(scene.models[i].vertices.length)/2] = scene.models[i].edges[0][0];
-				for(let j=(scene.models[i].vertices.length)/2; j<(scene.models[i].vertices.length);j++){
-					scene.models[i].edges[1][j] = j;
+				for(let j = (scene.models[i].vertices.length)/2; j<(scene.models[i].vertices.length); j++) {
+					scene.models[i].edges[1][j-(scene.models[i].vertices.length)/2] = j;
 				}
 				scene.models[i].edges[1][(scene.models[i].vertices.length)/2] = scene.models[i].edges[1][0];
-				for (let j = 0; j < scene.models[i].edges[0].length; j++) {
+				for (let j = 0; j < scene.models[i].edges[0].length-1; j++) {
 					scene.models[i].edges[2+j] = [scene.models[i].edges[0][j],scene.models[i].edges[1][j]];
 				}
 			} else if (scene.models[i].type === 'cone') {
@@ -367,27 +360,23 @@ function LoadNewScene() {
 				var rotate = mat4x4rotatey(360/sides);
 				// vertices
 				scene.models[i].vertices = [];
-				var v_BottomZero = Vector4(center[0]-radius*Math.sin((360/sides)*(Math.PI/180.0)),center[1]-height/2,center[2]+radius*Math.cos((360/sides)*(Math.PI/180.0)),1); 
-				scene.models[i].vertices[0] = v_BottomZero;
-				for(let j = 1; j<sides;j++ ){
-					var bottomvs = rotate.mult(v_BottomZero);
-					v_BottomZero = bottomvs;
-					scene.models[i].vertices[j] = bottomvs;
+				for(let j = 0; j<sides; j++) {
+					scene.models[i].vertices.push(Vector4(center[0]+radius*Math.cos(j*2*Math.PI/sides),center[1]-height/2,center[2]-radius*Math.sin(j*2*Math.PI/sides),1));
 				}
 				var v_Top = Vector4(center[0],center[1]+height/2,center[2],1);
 				scene.models[i].vertices[sides] = v_Top;
 				// edges
 				scene.models[i].edges = [];
-				for(let j= 0; j<scene.models[i].vertices.length;j++){
+				for(let j= 0; j<scene.models[i].vertices.length; j++) {
 					scene.models[i].edges[j] = [];
 				}
-				for(let j= 0; j<(scene.models[i].vertices.length)-1;j++){
+				for(let j= 0; j<(scene.models[i].vertices.length)-1; j++) {
 					scene.models[i].edges[0][j] = j;
 				}
 				scene.models[i].edges[0][scene.models[i].vertices.length-1] = scene.models[i].edges[0][0];
-				scene.models[i].edges[1][0] = scene.models[i].vertices.length;
-				scene.models[i].edges[1][1] = scene.models[i].vertices.length; // [6,6] is a one pixel line
-				for (let j = 0; j < scene.models[i].edges[0].length; j++) {
+				scene.models[i].edges[1][0] = scene.models[i].vertices.length-1;
+				scene.models[i].edges[1][1] = scene.models[i].vertices.length-1; // [6,6] is a one pixel line
+				for (let j = 0; j < scene.models[i].edges[0].length-1; j++) {
 					scene.models[i].edges[2+j] = [scene.models[i].edges[0][j],scene.models[i].edges[1][0]];
 				}
 			} else if (scene.models[i].type === 'sphere') {
