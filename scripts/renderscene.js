@@ -52,38 +52,41 @@ function Init() {
 
     // event handler for pressing arrow keys
     document.addEventListener('keydown', OnKeyDown, false);
-    
+
     DrawScene();
 }
 
 // Main drawing code here! Use information contained in variable `scene`
 function DrawScene() {
-	
+
+    //clears canvas for redraw
+    ctx.clearRect(0,0, view.width, view.height);
+
 	var v_matrix = new Matrix(4,4);
 	v_matrix.values = [[view.width/2, 0, 0, view.width/2],[0, view.height/2, 0, view.height/2],[0,0,1,0],[0,0,0,1]];
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
 	if (scene.view.type === 'perspective') {
 		var vector_Array = [];
 		var matrix_Array = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
-		
+
 		var Mper = mat4x4mper(-1);
 		for (let i = 0; i < scene.models[0].vertices.length; i++) {
-			
+
 			matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[0].vertices[i])));
 		}
-		
-		
-		
-		
-		
+
+
+
+
+
 		for (let j = 0; j < matrix_Array.length; j++) {
 			var v_x = matrix_Array[j].values[0][0];
 			var v_y = matrix_Array[j].values[1][0];
@@ -92,7 +95,7 @@ function DrawScene() {
 			var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
 			vector_Array[j] = vectorAfterMper;
 		}
-		
+
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -104,18 +107,18 @@ function DrawScene() {
 		var vector_Array = [];
 		var matrix_Array = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
-		
+
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
 		for (let i = 0; i < scene.models[0].vertices.length; i++) {
-			
+
 			matrix_Array[i] = v_matrix.mult(Mpar.mult(Npar.mult(scene.models[0].vertices[i])));
 		}
-		
-		
-		
-		
-		
+
+
+
+
+
 		for (let j = 0; j < matrix_Array.length; j++) {
 			var v_x = matrix_Array[j].values[0][0];
 			var v_y = matrix_Array[j].values[1][0];
@@ -124,7 +127,7 @@ function DrawScene() {
 			var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
 			vector_Array[j] = vectorAfterMper;
 		}
-		
+
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -133,7 +136,7 @@ function DrawScene() {
 			}
 		}
 	}
-	
+
 }
 
 function GetOutcode(vertices,zmin){
@@ -150,7 +153,7 @@ function GetOutcode(vertices,zmin){
 		} else {
 			code += 0;
 		}
-		
+
 		if(y<z) {
 			code += 8; //below
 		} else if(y>-z) {
@@ -158,7 +161,7 @@ function GetOutcode(vertices,zmin){
 		} else {
 			code +=0;
 		}
-		
+
 		if(z>zmin) {
 			code += 2; //infront
 		} else if(z<-1) {
@@ -174,7 +177,7 @@ function GetOutcode(vertices,zmin){
 		} else {
 			code += 0;
 		}
-		
+
 		if(y<-1) {
 			code += 8; //below
 		} else if(y>1) {
@@ -182,7 +185,7 @@ function GetOutcode(vertices,zmin){
 		} else {
 			code +=0;
 		}
-		
+
 		if(z>0) {
 			code += 2; //infront
 		} else if(z<-1) {
@@ -193,8 +196,9 @@ function GetOutcode(vertices,zmin){
 	}
 	return code;
 }
+
 function clipping(pt0,pt1,view){
-	
+
 	var left = 32;
 	var right = 16;
 	var bottom = 8;
@@ -203,11 +207,11 @@ function clipping(pt0,pt1,view){
 	var far = 1;
 	var pt0_array = [];
 	var pt1_array = [];
-	
+
 	var zmin = -(-z+view.clip[4])/(-z+view.clip[5]);
 	var codeA = GetOutcode(pt0,zmin);
 	var codeB = GetOutcode(pt1,zmin);
-	
+
 	var deltax = pt1.x-pt0.x;
 	var deltay = pt1.y-py0.y;
 	var deltaz = pt1.z-py0.z;
@@ -380,12 +384,12 @@ function LoadNewScene() {
 					scene.models[i].edges[2+j] = [scene.models[i].edges[0][j],scene.models[i].edges[1][0]];
 				}
 			} else if (scene.models[i].type === 'sphere') {
-				
-				
-				
-				
-				
-			
+
+
+
+
+
+
 			}else {
                 scene.models[i].center = Vector4(scene.models[i].center[0],
                                                  scene.models[i].center[1],
@@ -399,25 +403,29 @@ function LoadNewScene() {
     reader.readAsText(scene_file.files[0], "UTF-8");
 }
 
-// Called when user presses a key on the keyboard down 
+// Called when user presses a key on the keyboard down
 function OnKeyDown(event) {
     switch (event.keyCode) {
-        case 37: // LEFT Arrow
+        case 37: // LEFT Arrow rotate view-plane around v-axis with PRP as origin
             console.log("left");
             break;
-        case 38: // UP Arrow
+        case 38: // UP Arrow translate vrp along n-axis
             console.log("up");
+            scene.view.vrp.z = scene.view.vrp.z + 1;
+            DrawScene();
             break;
-        case 39: // RIGHT Arrow
+        case 39: // RIGHT Arrow rotate view-plane around v-axis with PRP as origin
             console.log("right");
             break;
-        case 40: // DOWN Arrow
+        case 40: // DOWN Arrow translate vrp along n-axis
             console.log("down");
+            scene.view.vrp.z = scene.view.vrp.z - 1;
+            DrawScene();
             break;
     }
 }
 
-// Draw black 2D line with red endpoints 
+// Draw black 2D line with red endpoints
 function DrawLine(x1, y1, x2, y2) {
     ctx.strokeStyle = '#000000';
     ctx.beginPath();
