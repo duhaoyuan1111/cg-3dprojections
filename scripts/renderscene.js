@@ -58,36 +58,20 @@ function Init() {
 
 // Main drawing code here! Use information contained in variable `scene`
 function DrawScene() {
-
     //clears canvas for redraw
     ctx.clearRect(0,0, view.width, view.height);
-
 	var v_matrix = new Matrix(4,4);
 	v_matrix.values = [[view.width/2, 0, 0, view.width/2],[0, view.height/2, 0, view.height/2],[0,0,1,0],[0,0,0,1]];
-
 	//var zmin = -(-z+scene.view.clip[4])/(-z+scene.view.clip[5]);
 	if (scene.view.type === 'perspective') {
 		var vector_Array = [];
 		var matrix_Array = [];
-		
-		var mega_Matrix_Array = [];
 		var mega_Vector_Array = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
-
 		var Mper = mat4x4mper(-1);
-		
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				
-				matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[j].vertices[i])));
-			}
-			mega_Matrix_Array.push(matrix_Array);
-		}
-
-
-
-		for (let i = 0; i < mega_Matrix_Array.length; i++) {
-			for (let j = 0; j < matrix_Array.length; j++) {
+				matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[j].vertices[i]))); // adding clip between Mper and Nper
 				var v_x = matrix_Array[j].values[0][0];
 				var v_y = matrix_Array[j].values[1][0];
 				var v_z = matrix_Array[j].values[2][0];
@@ -95,27 +79,26 @@ function DrawScene() {
 				var vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 				vector_Array[j] = vectorAfterMper;
 			}
-			mega_Vector_Array.push(vector_Array);
+			mega_Vector_Array[j] = vector_Array;
+			vector_Array = [];
 		}
+		
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
-					DrawLine(vector_Array[scene.models[k].edges[m][n]].x, vector_Array[scene.models[k].edges[m][n]].y, vector_Array[scene.models[k].edges[m][n+1]].x, vector_Array[scene.models[k].edges[m][n+1]].y);
+					DrawLine(mega_Vector_Array[k][scene.models[k].edges[m][n]].x, mega_Vector_Array[k][scene.models[k].edges[m][n]].y, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].x, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].y);
 				}
 			}
 		}
-	} else { // parallel
-		
+	} else { // scene.view.type === 'parallel'
 		var mega_Vector_Array = [];
 		var vector_Array = [];
 		var matrix_Array = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
-
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				
 				matrix_Array[i] = v_matrix.mult(Mpar.mult(Npar.mult(scene.models[j].vertices[i])));
 				let v_x = matrix_Array[i].values[0][0];
 				let v_y = matrix_Array[i].values[1][0];
@@ -123,22 +106,14 @@ function DrawScene() {
 				let v_w = matrix_Array[i].values[3][0];
 				let vectorAfterMpar = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 				vector_Array[i] = vectorAfterMpar;
-				
 			}
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
 		}
 		
-		
-		
-		
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
-					
-					//console.log(mega_Vector_Array[k]);
-					//console.log(scene.models[k].edges[m][n+1]);
-					//console.log(vector_Array);
 					DrawLine(mega_Vector_Array[k][scene.models[k].edges[m][n]].x, mega_Vector_Array[k][scene.models[k].edges[m][n]].y, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].x, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].y);
 				}
 			}
