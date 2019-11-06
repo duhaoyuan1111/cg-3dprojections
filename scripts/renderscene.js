@@ -79,12 +79,9 @@ function DrawScene() {
 				let vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 				vector_Array[i] = vectorAfterMper;
 			}
-
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
 		}
-		//console.log(mega_Vector_Array);
-
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -112,7 +109,6 @@ function DrawScene() {
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
 		}
-
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -121,7 +117,6 @@ function DrawScene() {
 			}
 		}
 	}
-
 }
 
 function GetOutcode(vertices,zmin){
@@ -363,28 +358,33 @@ function LoadNewScene() {
 				// vertices
 				scene.models[i].vertices = [];
 				for (let k = 0; k < stacks+2; k++) {
-					for (let j = 0; j < slices*2; j++) {
-						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))+radius*Math.sin(k*Math.PI/(stacks+1))-radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*Math.PI/slices), center[1]+radius*Math.cos(k*Math.PI/(stacks+1)), center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*Math.PI/slices), 1));
+					for (let j = 0; j < slices; j++) {
+						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*2*Math.PI/slices), 
+															  center[1]+radius*Math.cos(k*Math.PI/(stacks+1)),
+															  center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*2*Math.PI/slices), 
+															  1));
 					}
 				}
+				console.log(scene.models[i].vertices);
 				// edges
 				scene.models[i].edges = [];
-				for (let m = 0; m < 2*slices+stacks+2; m++) {
+				for (let m = 0; m < slices+stacks+2; m++) {
 					scene.models[i].edges[m] = [];
 				}
 				var count = 0;
 				for (let n = 0; n < stacks+2; n++) {
-					for (let m = 0; m < 2*slices; m++) {
+					for (let m = 0; m < slices; m++) {
 						scene.models[i].edges[m][n] = count;
 						count++;
 					}
 				}
 				var counter = 0;
-				for (let j = 2*slices; j < 2*slices+stacks+2; j++) {
-					for (let n = 0; n < 2*slices; n++) {
+				for (let j = slices; j < slices+stacks+2; j++) {
+					for (let n = 0; n < slices; n++) {
 						scene.models[i].edges[j][n] = counter;
 						counter++;
 					}
+					scene.models[i].edges[j][slices] = scene.models[i].edges[j][0];
 				}
 			} else {
 				scene.models[i].center = Vector4(scene.models[i].center[0],
