@@ -32,13 +32,6 @@
             "radius": 3,
             "height": 8,
             "sides": 9
-        },
-		{
-            "type": "sphere",
-            "center": [6, 6, -20],
-            "radius": 4,
-            "slices": 2,
-			"stacks": 4
         }
     ]
 }
