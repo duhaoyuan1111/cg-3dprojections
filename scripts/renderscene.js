@@ -72,16 +72,18 @@ function DrawScene() {
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[j].vertices[i]))); // adding clip between Mper and Nper
-				var v_x = matrix_Array[j].values[0][0];
-				var v_y = matrix_Array[j].values[1][0];
-				var v_z = matrix_Array[j].values[2][0];
-				var v_w = matrix_Array[j].values[3][0];
-				var vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
-				vector_Array[j] = vectorAfterMper;
+				let v_x = matrix_Array[i].values[0][0];
+				let v_y = matrix_Array[i].values[1][0];
+				let v_z = matrix_Array[i].values[2][0];
+				let v_w = matrix_Array[i].values[3][0];
+				let vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
+				vector_Array[i] = vectorAfterMper;
 			}
+			
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
 		}
+		//console.log(mega_Vector_Array);
 		
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
@@ -354,13 +356,36 @@ function LoadNewScene() {
 					scene.models[i].edges[2+j] = [scene.models[i].edges[0][j],scene.models[i].edges[1][0]];
 				}
 			} else if (scene.models[i].type === 'sphere') {
-				
-				
-				
-				
-				
-				
-				
+				var slices = scene.models[i].slices; //longitude jingdu
+				var stacks = scene.models[i].stacks; //latitude  weidu
+				var center = scene.models[i].center;
+				var radius = scene.models[i].radius;
+				// vertices
+				scene.models[i].vertices = [];
+				for (let k = 0; k < stacks+2; k++) {
+					for (let j = 0; j < slices*2; j++) {
+						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))+radius*Math.sin(k*Math.PI/(stacks+1))-radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*Math.PI/slices), center[1]+radius*Math.cos(k*Math.PI/(stacks+1)), center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*Math.PI/slices), 1));
+					}
+				}
+				// edges
+				scene.models[i].edges = [];
+				for (let m = 0; m < 2*slices+stacks+2; m++) {
+					scene.models[i].edges[m] = [];
+				}
+				var count = 0;
+				for (let n = 0; n < stacks+2; n++) {
+					for (let m = 0; m < 2*slices; m++) {
+						scene.models[i].edges[m][n] = count;
+						count++;
+					}
+				}
+				var counter = 0;
+				for (let j = 2*slices; j < 2*slices+stacks+2; j++) {
+					for (let n = 0; n < 2*slices; n++) {
+						scene.models[i].edges[j][n] = counter;
+						counter++;
+					}
+				}
 			} else {
 				scene.models[i].center = Vector4(scene.models[i].center[0],
                                                  scene.models[i].center[1],
