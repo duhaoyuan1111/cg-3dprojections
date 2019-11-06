@@ -1,6 +1,6 @@
 {
     "view": {
-        "type": "parallel",
+        "type": "perspective",
         "vrp": [0, 0, 0],
         "vpn": [0, 0, 1],
         "vup": [0, 1, 0],
