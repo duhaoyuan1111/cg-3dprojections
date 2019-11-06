@@ -69,24 +69,6 @@ function DrawScene() {
 		var mega_Vector_Array = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mper = mat4x4mper(-1);
-<<<<<<< HEAD
-		for (let i = 0; i < scene.models[0].vertices.length; i++) {
-
-			matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[0].vertices[i])));
-		}
-
-
-
-
-
-		for (let j = 0; j < matrix_Array.length; j++) {
-			var v_x = matrix_Array[j].values[0][0];
-			var v_y = matrix_Array[j].values[1][0];
-			var v_z = matrix_Array[j].values[2][0];
-			var v_w = matrix_Array[j].values[3][0];
-			var vectorAfterMper = Vector3(v_x/v_w, v_y/v_w, v_z/v_w);
-			vector_Array[j] = vectorAfterMper;
-=======
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				matrix_Array[i] = v_matrix.mult(Mper.mult(Nper.mult(scene.models[j].vertices[i]))); // adding clip between Mper and Nper
@@ -97,13 +79,12 @@ function DrawScene() {
 				let vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 				vector_Array[i] = vectorAfterMper;
 			}
-			
+
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
->>>>>>> 31ea43d4259d2110a3d7d0daa330acd8fb733043
 		}
 		//console.log(mega_Vector_Array);
-		
+
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -118,26 +99,6 @@ function DrawScene() {
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
-<<<<<<< HEAD
-		for (let i = 0; i < scene.models[0].vertices.length; i++) {
-
-			matrix_Array[i] = v_matrix.mult(Mpar.mult(Npar.mult(scene.models[0].vertices[i])));
-		}
-
-
-
-
-
-		for (let j = 0; j < matrix_Array.length; j++) {
-			var v_x = matrix_Array[j].values[0][0];
-			var v_y = matrix_Array[j].values[1][0];
-			var v_z = matrix_Array[j].values[2][0];
-			var v_w = matrix_Array[j].values[3][0];
-	//		var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
-            var vectorAfterMper = Vector3(v_x/v_w, v_y/v_w, v_z/v_w);
-            console.log(vectorAfterMper);
-			vector_Array[j] = vectorAfterMper;
-=======
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				matrix_Array[i] = v_matrix.mult(Mpar.mult(Npar.mult(scene.models[j].vertices[i])));
@@ -150,9 +111,8 @@ function DrawScene() {
 			}
 			mega_Vector_Array[j] = vector_Array;
 			vector_Array = [];
->>>>>>> 31ea43d4259d2110a3d7d0daa330acd8fb733043
 		}
-		
+
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < scene.models[k].edges.length; m++) {
 				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
@@ -477,7 +437,7 @@ function OnKeyDown(event) {
             var v_axis = n_axis.cross(u_axis);
 
 /* translate, rotate, translate prp for VPN, then rotate how much you rotate, then undo tranlate, rotate, translate prp
-vrp rotate 
+vrp rotate
 
 var t_matrix = new Matrix(4,4);
 var r_matrix = new Matrix(4,4);
