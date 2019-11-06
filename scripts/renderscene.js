@@ -92,7 +92,7 @@ function DrawScene() {
 			var v_y = matrix_Array[j].values[1][0];
 			var v_z = matrix_Array[j].values[2][0];
 			var v_w = matrix_Array[j].values[3][0];
-			var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
+			var vectorAfterMper = Vector3(v_x/v_w, v_y/v_w, v_z/v_w);
 			vector_Array[j] = vectorAfterMper;
 		}
 
@@ -124,7 +124,9 @@ function DrawScene() {
 			var v_y = matrix_Array[j].values[1][0];
 			var v_z = matrix_Array[j].values[2][0];
 			var v_w = matrix_Array[j].values[3][0];
-			var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
+	//		var vectorAfterMper = Vector4(v_x, v_y, v_z, v_w);
+            var vectorAfterMper = Vector3(v_x/v_w, v_y/v_w, v_z/v_w);
+            console.log(vectorAfterMper);
 			vector_Array[j] = vectorAfterMper;
 		}
 
@@ -408,18 +410,77 @@ function OnKeyDown(event) {
     switch (event.keyCode) {
         case 37: // LEFT Arrow rotate view-plane around v-axis with PRP as origin
             console.log("left");
+            scene.view.vpn.normalize();
+            var n_axis = scene.view.vpn;
+            var u_axis = scene.view.vup.cross(n_axis);
+            u_axis.normalize();
+            var v_axis = n_axis.cross(u_axis);
+            var addThisU = Vector3(u_axis.x, u_axis.y, u_axis.z);
+            addThisU.scale(scene.view.prp.x);
+            var addThisV = Vector3(v_axis.x, v_axis.y, v_axis.z);
+            addThisV.scale(scene.view.prp.y);
+            var addThisN = Vector3(n_axis.x, n_axis.y, n_axis.z);
+            addThisN.scale(scene.view.prp.z);
+            var vrpCopy = Vector3(scene.view.vrp.x, scene.view.vrp.y, scene.view.vrp.z);
+            var prpWorld = vrpCopy.add(addThisU).add(addThisV).add(addThisN);
+            console.log(prpWorld);
+
+
+
             break;
         case 38: // UP Arrow translate vrp along n-axis
             console.log("up");
-            scene.view.vrp.z = scene.view.vrp.z + 1;
+            scene.view.vpn.normalize();
+            scene.view.vrp = scene.view.vrp.subtract(scene.view.vpn);
             DrawScene();
             break;
         case 39: // RIGHT Arrow rotate view-plane around v-axis with PRP as origin
             console.log("right");
+            scene.view.vpn.normalize();
+            var n_axis = scene.view.vpn;
+            var u_axis = scene.view.vup.cross(n_axis);
+            u_axis.normalize();
+            var v_axis = n_axis.cross(u_axis);
+
+/* translate, rotate, translate prp for VPN, then rotate how much you rotate, then undo tranlate, rotate, translate prp
+vrp rotate 
+
+var t_matrix = new Matrix(4,4);
+var r_matrix = new Matrix(4,4);
+var t_prp_matrix = new Matrix(4,4);
+var Shear_matrix = new Matrix(4,4);
+var Sper_matrix = new Matrix(4,4);
+
+var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
+t_matrix.values = translate;
+
+var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[v_axis.x,v_axis.y,v_axis.z,0],[n_axis.x,n_axis.y,n_axis.z,0],[0,0,0,1]];
+r_matrix.values = rotate;
+
+var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
+t_prp_matrix.values = translateprp;
+
+*/
+
+
+/*            var addThisU = Vector3(u_axis.x, u_axis.y, u_axis.z);
+            addThisU.scale(scene.view.prp.x);
+            var addThisV = Vector3(v_axis.x, v_axis.y, v_axis.z);
+            addThisV.scale(scene.view.prp.y);
+            var addThisN = Vector3(n_axis.x, n_axis.y, n_axis.z);
+            addThisN.scale(scene.view.prp.z);
+            var vrpCopy = Vector3(scene.view.vrp.x, scene.view.vrp.y, scene.view.vrp.z);
+            var prpWorld = vrpCopy.add(addThisU).add(addThisV).add(addThisN);
+            console.log(prpWorld);
+            var translatePrpW = mat4x4translate(-prpWorld.x, -prpWorld.y, -prpWorld.z);
+            var rotatePrpW = mat
+*/
+
             break;
         case 40: // DOWN Arrow translate vrp along n-axis
             console.log("down");
-            scene.view.vrp.z = scene.view.vrp.z - 1;
+            scene.view.vpn.normalize();
+            scene.view.vrp = scene.view.vrp.add(scene.view.vpn)
             DrawScene();
             break;
     }
