@@ -113,8 +113,8 @@ function DrawScene() {
 			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
 				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
 					DrawLine(mega_Vector_Array[k][m][n].x,
-							mega_Vector_Array[k][m][n].y, 
-							mega_Vector_Array[k][m][n+1].x, 
+							mega_Vector_Array[k][m][n].y,
+							mega_Vector_Array[k][m][n+1].x,
 							mega_Vector_Array[k][m][n+1].y);
 				}
 			}
@@ -243,7 +243,7 @@ function clipping(pt0,pt1,view){
 				select_pt = pt1;
 				select_code = codeB;
 			}
-			
+
 			if((select_code & left) === left) {
 				let t = (-select_pt[0]+select_pt[2])/(deltax-deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
@@ -393,9 +393,9 @@ function LoadNewScene() {
 				scene.models[i].vertices = [];
 				for (let k = 0; k < stacks+2; k++) {
 					for (let j = 0; j < slices; j++) {
-						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*2*Math.PI/slices), 
+						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*2*Math.PI/slices),
 															  center[1]+radius*Math.cos(k*Math.PI/(stacks+1)),
-															  center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*2*Math.PI/slices), 
+															  center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*2*Math.PI/slices),
 															  1));
 					}
 				}
@@ -436,73 +436,29 @@ function LoadNewScene() {
 // Called when user presses a key on the keyboard down
 function OnKeyDown(event) {
     switch (event.keyCode) {
-        case 37: // LEFT Arrow rotate view-plane around v-axis with PRP as origin
+        case 37: // LEFT Arrow translate the VRP along the u-axis
             console.log("left");
             scene.view.vpn.normalize();
-            var n_axis = scene.view.vpn;
-            var u_axis = scene.view.vup.cross(n_axis);
-            u_axis.normalize();
-            var v_axis = n_axis.cross(u_axis);
-            var addThisU = Vector3(u_axis.x, u_axis.y, u_axis.z);
-            addThisU.scale(scene.view.prp.x);
-            var addThisV = Vector3(v_axis.x, v_axis.y, v_axis.z);
-            addThisV.scale(scene.view.prp.y);
-            var addThisN = Vector3(n_axis.x, n_axis.y, n_axis.z);
-            addThisN.scale(scene.view.prp.z);
-            var vrpCopy = Vector3(scene.view.vrp.x, scene.view.vrp.y, scene.view.vrp.z);
-            var prpWorld = vrpCopy.add(addThisU).add(addThisV).add(addThisN);
-            console.log(prpWorld);
-
-
-
+            scene.view.vup.cross(scene.view.vpn).normalize();
+            var v_axis = scene.view.vpn.cross(scene.view.vup);
+            scene.view.vrp = scene.view.vrp.subtract(v_axis);
+            DrawScene();
             break;
+
         case 38: // UP Arrow translate vrp along n-axis
             console.log("up");
             scene.view.vpn.normalize();
             scene.view.vrp = scene.view.vrp.subtract(scene.view.vpn);
             DrawScene();
             break;
-        case 39: // RIGHT Arrow rotate view-plane around v-axis with PRP as origin
+
+        case 39: // RIGHT  translate the VRP along the u-axis
             console.log("right");
             scene.view.vpn.normalize();
-            var n_axis = scene.view.vpn;
-            var u_axis = scene.view.vup.cross(n_axis);
-            u_axis.normalize();
-            var v_axis = n_axis.cross(u_axis);
-
-/* translate, rotate, translate prp for VPN, then rotate how much you rotate, then undo tranlate, rotate, translate prp
-vrp rotate
-
-var t_matrix = new Matrix(4,4);
-var r_matrix = new Matrix(4,4);
-var t_prp_matrix = new Matrix(4,4);
-var Shear_matrix = new Matrix(4,4);
-var Sper_matrix = new Matrix(4,4);
-
-var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
-t_matrix.values = translate;
-
-var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[v_axis.x,v_axis.y,v_axis.z,0],[n_axis.x,n_axis.y,n_axis.z,0],[0,0,0,1]];
-r_matrix.values = rotate;
-
-var translateprp = [[1,0,0,-prp.x],[0,1,0,-prp.y],[0,0,1,-prp.z],[0,0,0,1]];
-t_prp_matrix.values = translateprp;
-
-*/
-
-
-/*            var addThisU = Vector3(u_axis.x, u_axis.y, u_axis.z);
-            addThisU.scale(scene.view.prp.x);
-            var addThisV = Vector3(v_axis.x, v_axis.y, v_axis.z);
-            addThisV.scale(scene.view.prp.y);
-            var addThisN = Vector3(n_axis.x, n_axis.y, n_axis.z);
-            addThisN.scale(scene.view.prp.z);
-            var vrpCopy = Vector3(scene.view.vrp.x, scene.view.vrp.y, scene.view.vrp.z);
-            var prpWorld = vrpCopy.add(addThisU).add(addThisV).add(addThisN);
-            console.log(prpWorld);
-            var translatePrpW = mat4x4translate(-prpWorld.x, -prpWorld.y, -prpWorld.z);
-            var rotatePrpW = mat
-*/
+            scene.view.vup.cross(scene.view.vpn).normalize();
+            var v_axis = scene.view.vpn.cross(scene.view.vup);
+            scene.view.vrp = scene.view.vrp.add(v_axis);
+            DrawScene();
 
             break;
         case 40: // DOWN Arrow translate vrp along n-axis
