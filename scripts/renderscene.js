@@ -78,7 +78,7 @@ function DrawScene() {
 				
 				beforeClipping[i] = Nper.mult(scene.models[j].vertices[i]);
 			}
-			console.log(beforeClipping);
+			//console.log(beforeClipping);
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
@@ -92,7 +92,7 @@ function DrawScene() {
 			}
 			mega_clipVertices[j] = clipVertices;
 			clipVertices = [];
-			console.log(mega_clipVertices);
+			//console.log(mega_clipVertices);
 		}
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < mega_clipVertices[j].length; i++) {
@@ -139,6 +139,7 @@ function DrawScene() {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				beforeClipping[i] = Npar.mult(scene.models[j].vertices[i])
 			}
+			
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
@@ -153,6 +154,7 @@ function DrawScene() {
 			mega_clipVertices[j] = clipVertices;
 			clipVertices = [];
 		}
+		//console.log(mega_clipVertices);
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < mega_clipVertices[j].length; i++) {
 				for (let k = 0; k < mega_clipVertices[j][i].length; k++) {
@@ -170,7 +172,7 @@ function DrawScene() {
 			mega_Vector_Array.push(vector_Array);
 			vector_Array = [];
 		}
-		console.log(mega_Vector_Array);
+		//console.log(mega_Vector_Array);
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
 				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
@@ -185,9 +187,9 @@ function DrawScene() {
 }
 
 function GetOutcode(vertices,zmin){
-	var x = vertices[0];
-	var y = vertices[1];
-	var z = vertices[2];
+	var x = vertices.values[0][0];
+	var y = vertices.values[1][0];
+	var z = vertices.values[2][0];
 	var code = 0;
 	if(scene.view.type == "perspective") {
 		if(x<z) {
@@ -238,7 +240,7 @@ function GetOutcode(vertices,zmin){
 			code += 0;
 		}
 	}
-	console.log(code);
+	//console.log(code);
 	return code;
 }
 
@@ -253,9 +255,9 @@ function clipping(pt0,pt1,view){
 	var zmin = -(-view.prp.z+view.clip[4])/(-view.prp.z+view.clip[5]);
 	var codeA = GetOutcode(pt0,zmin);
 	var codeB = GetOutcode(pt1,zmin);
-	var deltax = pt1[0]-pt0[0];
-	var deltay = pt1[1]-pt0[1];
-	var deltaz = pt1[2]-pt0[2];
+	var deltax = pt1.values[0][0]-pt0.values[0][0];
+	var deltay = pt1.values[1][0]-pt0.values[1][0];
+	var deltaz = pt1.values[2][0]-pt0.values[2][0];
 	var done = false;
 	
 	while(!done){
@@ -271,60 +273,78 @@ function clipping(pt0,pt1,view){
 			done = true;
 			result = null;
 		} else {
-			var select_pt;
+			var select_pt = new Matrix(4,4);
 			var select_code;
 			if(codeA>0) {
-				select_pt = pt0;
+				select_pt.values = pt0;
 				select_code = codeA;
 			} else {
-				select_pt = pt1;
+				select_pt.values = pt1;
 				select_code = codeB;
 			}
-
+			let t;
 			if((select_code & left) === left) {
-				let t = (-select_pt[0]+select_pt[2])/(deltax-deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (-select_pt.values[0][0]+select_pt.values[0][2])/(deltax-deltaz);
+				} else {
+					t = (-1-select_pt.values[0][0])/deltax;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			} else if((select_code & right) === right) {
-				let t = (select_pt[0]+select_pt[2])/(-deltax-deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (select_pt.values[0][0]+select_pt.values[0][2])/(-deltax-deltaz);
+				} else {
+					t = (1-select_pt.values[0][0])/deltax;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			} else if((select_code & bottom) === bottom) {
-				let t = (-select_pt[1]+select_pt[2])/(deltay-deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (-select_pt.values[0][1]+select_pt.values[0][2])/(deltay-deltaz);
+				} else {
+					t = (-1-select_pt.values[0][1])/deltay;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			} else if((select_code & top) === top) {
-				let t = (select_pt[1]+select_pt[2])/(-deltay-deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (select_pt.values[0][1]+select_pt.values[0][2])/(-deltay-deltaz);
+				} else {
+					t = (1-select_pt.values[0][1])/deltay;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			} else if((select_code & near) === near) {
-				let t = (select_pt[2]-zmin)/(-deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (select_pt.values[0][2]-zmin)/(-deltaz);
+				} else {
+					t = (-select_pt.values[0][2])/deltaz;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			} else if((select_code & far) === far) {
-				let t = (-select_pt[2]-1)/(deltaz);
-				select_pt[0] = select_pt[0]+t*deltax;
-				select_pt[1] = select_pt[1]+t*deltay;
-				select_pt[2] = select_pt[2]+t*deltaz;
-				console.log("11111111");
+				if (view.type == 'perspective') {
+					t = (-select_pt.values[0][2]-1)/(deltaz);
+				} else {
+					t = (-1-select_pt.values[0][2])/deltaz;
+				}
+				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
+				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
+				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
 			}
 			select_code = GetOutcode(select_pt,zmin);
 			if(codeA>0) {
 				codeA = select_code;
-				pt0 = select_pt;
+				pt0.values = select_pt;
 			} else {
 				codeB = select_code;
-				pt1 = select_pt;
+				pt1.values = select_pt;
 			}
 		}
 	}
