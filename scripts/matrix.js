@@ -322,9 +322,11 @@ function mat4x4parallel(vrp, vpn, vup, prp, clip) {
 	var Spar_matrix = new Matrix(4,4);
 	var translate = [[1,0,0,-vrp.x],[0,1,0,-vrp.y],[0,0,1,-vrp.z],[0,0,0,1]];
 	t_matrix.values = translate;
-	
+	vpn.normalize();
 	var u_axis = vup.cross(vpn);
-	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[vup.x,vup.y,vup.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
+	u_axis.normalize();
+	var v_axis = vpn.cross(u_axis);
+	var rotate = [[u_axis.x,u_axis.y,u_axis.z,0],[v_axis.x,v_axis.y,v_axis.z,0],[vpn.x,vpn.y,vpn.z,0],[0,0,0,1]];
 	r_matrix.values = rotate;
 	
 	var cwx = (clip[0] + clip[1])/2; //clip is an array - (umin, umax, vmin, vmax, front, back)
