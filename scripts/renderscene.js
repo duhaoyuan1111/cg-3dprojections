@@ -502,9 +502,9 @@ function OnKeyDown(event) {
         case 37: // LEFT Arrow translate the VRP along the u-axis
             console.log("left");
             scene.view.vpn.normalize();
-            scene.view.vup.cross(scene.view.vpn).normalize();
-            var v_axis = scene.view.vpn.cross(scene.view.vup);
-            scene.view.vrp = scene.view.vrp.subtract(v_axis);
+            var u_axis = scene.view.vup.cross(scene.view.vpn);
+			u_axis.normalize();
+            scene.view.vrp = scene.view.vrp.subtract(u_axis);
             DrawScene();
             break;
 
@@ -518,9 +518,9 @@ function OnKeyDown(event) {
         case 39: // RIGHT  translate the VRP along the u-axis
             console.log("right");
             scene.view.vpn.normalize();
-            scene.view.vup.cross(scene.view.vpn).normalize();
-            var v_axis = scene.view.vpn.cross(scene.view.vup);
-            scene.view.vrp = scene.view.vrp.add(v_axis);
+            var u_axis = scene.view.vup.cross(scene.view.vpn);
+			u_axis.normalize();
+            scene.view.vrp = scene.view.vrp.add(u_axis);
             DrawScene();
 
             break;
