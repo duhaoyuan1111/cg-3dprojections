@@ -385,8 +385,8 @@ function LoadNewScene() {
 					scene.models[i].edges[2+j] = [scene.models[i].edges[0][j],scene.models[i].edges[1][0]];
 				}
 			} else if (scene.models[i].type === 'sphere') {
-				var slices = scene.models[i].slices; //longitude jingdu
-				var stacks = scene.models[i].stacks; //latitude  weidu
+				var slices = scene.models[i].slices;
+				var stacks = scene.models[i].stacks;
 				var center = scene.models[i].center;
 				var radius = scene.models[i].radius;
 				// vertices
