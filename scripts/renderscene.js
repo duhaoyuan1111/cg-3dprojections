@@ -75,8 +75,10 @@ function DrawScene() {
 		var Mper = mat4x4mper(-1);
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
+				
 				beforeClipping[i] = Nper.mult(scene.models[j].vertices[i]);
 			}
+			console.log(beforeClipping);
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
@@ -90,6 +92,7 @@ function DrawScene() {
 			}
 			mega_clipVertices[j] = clipVertices;
 			clipVertices = [];
+			console.log(mega_clipVertices);
 		}
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < mega_clipVertices[j].length; i++) {
@@ -167,6 +170,7 @@ function DrawScene() {
 			mega_Vector_Array.push(vector_Array);
 			vector_Array = [];
 		}
+		console.log(mega_Vector_Array);
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
 				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
@@ -234,6 +238,7 @@ function GetOutcode(vertices,zmin){
 			code += 0;
 		}
 	}
+	console.log(code);
 	return code;
 }
 
@@ -252,6 +257,7 @@ function clipping(pt0,pt1,view){
 	var deltay = pt1[1]-pt0[1];
 	var deltaz = pt1[2]-pt0[2];
 	var done = false;
+	
 	while(!done){
 		var OR = (codeA | codeB);
 		var And = (codeA & codeB);
@@ -280,31 +286,37 @@ function clipping(pt0,pt1,view){
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			} else if((select_code & right) === right) {
 				let t = (select_pt[0]+select_pt[2])/(-deltax-deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			} else if((select_code & bottom) === bottom) {
 				let t = (-select_pt[1]+select_pt[2])/(deltay-deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			} else if((select_code & top) === top) {
 				let t = (select_pt[1]+select_pt[2])/(-deltay-deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			} else if((select_code & near) === near) {
 				let t = (select_pt[2]-zmin)/(-deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			} else if((select_code & far) === far) {
 				let t = (-select_pt[2]-1)/(deltaz);
 				select_pt[0] = select_pt[0]+t*deltax;
 				select_pt[1] = select_pt[1]+t*deltay;
 				select_pt[2] = select_pt[2]+t*deltaz;
+				console.log("11111111");
 			}
 			select_code = GetOutcode(select_pt,zmin);
 			if(codeA>0) {
