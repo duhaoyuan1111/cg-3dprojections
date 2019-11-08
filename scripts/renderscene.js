@@ -75,7 +75,7 @@ function DrawScene() {
 		var Mper = mat4x4mper(-1);
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				beforeClipping[i] = Nper.mult(scene.models[j].vertices[i])
+				beforeClipping[i] = Nper.mult(scene.models[j].vertices[i]);
 			}
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
@@ -108,7 +108,7 @@ function DrawScene() {
 			mega_Vector_Array.push(vector_Array);
 			vector_Array = [];
 		}
-		console.log(mega_Vector_Array);
+		//console.log(mega_Vector_Array);
 		for (let k = 0; k < scene.models.length; k++) {
 			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
 				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
@@ -120,29 +120,60 @@ function DrawScene() {
 			}
 		}
 	} else { // scene.view.type === 'parallel'
-		var mega_Vector_Array = [];
 		var vector_Array = [];
 		var matrix_Array = [];
+		var mega_Vector_Array = [];
+		var tiny_Vector_Array = [];
+		var beforeClipping = [];
+		var clipVertices = [];
+		var tiny_clipVertices = [];
+		var mega_clipVertices = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
+		
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				matrix_Array[i] = v_matrix.mult(Mpar.mult(Npar.mult(scene.models[j].vertices[i])));
-				let v_x = matrix_Array[i].values[0][0];
-				let v_y = matrix_Array[i].values[1][0];
-				let v_z = matrix_Array[i].values[2][0];
-				let v_w = matrix_Array[i].values[3][0];
-				let vectorAfterMpar = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
-				vector_Array[i] = vectorAfterMpar;
+				beforeClipping[i] = Npar.mult(scene.models[j].vertices[i])
 			}
-			mega_Vector_Array[j] = vector_Array;
+			for (let m = 0; m < scene.models[j].edges.length; m++) {
+				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
+					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
+					if (ans != null) {
+						tiny_clipVertices.push(ans[0]);
+						tiny_clipVertices.push(ans[1]);
+					}
+				}
+				clipVertices.push(tiny_clipVertices);
+				tiny_clipVertices = [];
+			}
+			mega_clipVertices[j] = clipVertices;
+			clipVertices = [];
+		}
+		for (let j = 0; j < scene.models.length; j++) {
+			for (let i = 0; i < mega_clipVertices[j].length; i++) {
+				for (let k = 0; k < mega_clipVertices[j][i].length; k++) {
+					matrix_Array[k] = v_matrix.mult(Mpar.mult(mega_clipVertices[j][i][k]));
+					let v_x = matrix_Array[k].values[0][0];
+					let v_y = matrix_Array[k].values[1][0];
+					let v_z = matrix_Array[k].values[2][0];
+					let v_w = matrix_Array[k].values[3][0];
+					let vectorAfterMpar = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
+					tiny_Vector_Array.push(vectorAfterMpar);
+				}
+				vector_Array.push(tiny_Vector_Array);
+				tiny_Vector_Array = [];
+			}
+			mega_Vector_Array.push(vector_Array);
 			vector_Array = [];
 		}
 		for (let k = 0; k < scene.models.length; k++) {
-			for (let m = 0; m < scene.models[k].edges.length; m++) {
-				for (let n = 0; n < scene.models[k].edges[m].length-1; n++) {
-					DrawLine(mega_Vector_Array[k][scene.models[k].edges[m][n]].x, mega_Vector_Array[k][scene.models[k].edges[m][n]].y, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].x, mega_Vector_Array[k][scene.models[k].edges[m][n+1]].y);
+			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
+				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
+					DrawLine(mega_Vector_Array[k][m][n].x,
+							mega_Vector_Array[k][m][n].y,
+							mega_Vector_Array[k][m][n+1].x,
+							mega_Vector_Array[k][m][n+1].y);
 				}
 			}
 		}
