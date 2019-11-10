@@ -26,29 +26,25 @@ function Init() {
             {
                 type: 'generic',
                 vertices: [
-                    //Vector4( 0,  0, -30, 1),
+                    Vector4( 0,  0, -30, 1),
                     Vector4(20,  0, -30, 1),
                     Vector4(20, 12, -30, 1),
-                    //Vector4(10, 20, -30, 1),
-                    //Vector4( 0, 12, -30, 1),
-                    //Vector4( 0,  0, -60, 1),
+                    Vector4(10, 20, -30, 1),
+                    Vector4( 0, 12, -30, 1),
+                    Vector4( 0,  0, -60, 1),
                     Vector4(20,  0, -60, 1),
                     Vector4(20, 12, -60, 1),
                     Vector4(10, 20, -60, 1),
-                    //Vector4( 0, 12, -60, 1)
+                    Vector4( 0, 12, -60, 1)
                 ],
                 edges: [
-                    /*[0, 1, 2, 3, 4, 0],
+                    [0, 1, 2, 3, 4, 0],
                     [5, 6, 7, 8, 9, 5],
                     [0, 5],
                     [1, 6],
                     [2, 7],
                     [3, 8],
-                    [4, 9] */
-					[1,3],
-					[0,2],
-					[2,3],
-					[3,4]
+                    [4, 9]
                 ]
             }
         ]
@@ -207,9 +203,11 @@ function clipping(pt0,pt1,view){
 	var front = 2;
 	var back = 1;
 	var result = [];
+	var tempPt0 = Vector4(pt0.x,pt0.y,pt0.z,1);
+	var tempPt1 = Vector4(pt1.x,pt1.y,pt1.z,1);
 	var zmin = -(-view.prp.z+view.clip[4])/(-view.prp.z+view.clip[5]);
-	var codeA = GetOutcode(pt0,view);
-	var codeB = GetOutcode(pt1,view);
+	var codeA = GetOutcode(tempPt0,view);
+	var codeB = GetOutcode(tempPt1,view);
 	var deltax = pt1.x-pt0.x;
 	var deltay = pt1.y-pt0.y;
 	var deltaz = pt1.z-pt0.z;
@@ -220,22 +218,20 @@ function clipping(pt0,pt1,view){
 		var And = (codeA & codeB);
 		if(OR == 0){
 			done = true;
-			result[0] = Vector4(pt0.x,pt0.y,pt0.z,1);
-			result[1] = Vector4(pt1.x,pt1.y,pt1.z,1);
-			
+			result[0] = tempPt0;
+			result[1] = tempPt1;
 			return result;
 		} else if(And != 0) {
 			done = true;
-			console.log("11111111");
 			return null;
 		} else {
 			var select_pt;
 			var select_code;
 			if(codeA > 0) {
-				select_pt = pt0;
+				select_pt = tempPt0;
 				select_code = codeA;
 			} else {
-				select_pt = pt1;
+				select_pt = tempPt1;
 				select_code = codeB;
 			}
 			if((select_code & left) === left){
