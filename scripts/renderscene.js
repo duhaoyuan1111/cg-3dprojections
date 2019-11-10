@@ -26,25 +26,29 @@ function Init() {
             {
                 type: 'generic',
                 vertices: [
-                    Vector4( 0,  0, -30, 1),
+                    //Vector4( 0,  0, -30, 1),
                     Vector4(20,  0, -30, 1),
                     Vector4(20, 12, -30, 1),
-                    Vector4(10, 20, -30, 1),
-                    Vector4( 0, 12, -30, 1),
-                    Vector4( 0,  0, -60, 1),
+                    //Vector4(10, 20, -30, 1),
+                    //Vector4( 0, 12, -30, 1),
+                    //Vector4( 0,  0, -60, 1),
                     Vector4(20,  0, -60, 1),
                     Vector4(20, 12, -60, 1),
                     Vector4(10, 20, -60, 1),
-                    Vector4( 0, 12, -60, 1)
+                    //Vector4( 0, 12, -60, 1)
                 ],
                 edges: [
-                    [0, 1, 2, 3, 4, 0],
+                    /*[0, 1, 2, 3, 4, 0],
                     [5, 6, 7, 8, 9, 5],
                     [0, 5],
                     [1, 6],
                     [2, 7],
                     [3, 8],
-                    [4, 9]
+                    [4, 9] */
+					[1,3],
+					[0,2],
+					[2,3],
+					[3,4]
                 ]
             }
         ]
@@ -63,288 +67,237 @@ function DrawScene() {
 	var v_matrix = new Matrix(4,4);
 	v_matrix.values = [[view.width/2, 0, 0, view.width/2],[0, view.height/2, 0, view.height/2],[0,0,1,0],[0,0,0,1]];
 	if (scene.view.type === 'perspective') {
-		var vector_Array = [];
-		var matrix_Array = [];
-		var mega_Vector_Array = [];
-		var tiny_Vector_Array = [];
+		var beforeDrawLine = [];
 		var beforeClipping = [];
 		var clipVertices = [];
-		var tiny_clipVertices = [];
-		var mega_clipVertices = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mper = mat4x4mper(-1);
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				
-				beforeClipping[i] = Nper.mult(scene.models[j].vertices[i]);
+				beforeClipping[i] = Matrix.multiply(Nper, scene.models[j].vertices[i]);
 			}
 			//console.log(beforeClipping);
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
-					if (ans != null) {
-						tiny_clipVertices.push(ans[0]);
-						tiny_clipVertices.push(ans[1]);
+					if (ans !== null) {
+						clipVertices.push(ans[0]);
+						clipVertices.push(ans[1]);
+						
 					}
 				}
-				clipVertices.push(tiny_clipVertices);
-				tiny_clipVertices = [];
 			}
-			mega_clipVertices[j] = clipVertices;
-			clipVertices = [];
-			//console.log(mega_clipVertices);
-		}
-		for (let j = 0; j < scene.models.length; j++) {
-			for (let i = 0; i < mega_clipVertices[j].length; i++) {
-				for (let k = 0; k < mega_clipVertices[j][i].length; k++) {
-					matrix_Array[k] = v_matrix.mult(Mper.mult(mega_clipVertices[j][i][k]));
-					let v_x = matrix_Array[k].values[0][0];
-					let v_y = matrix_Array[k].values[1][0];
-					let v_z = matrix_Array[k].values[2][0];
-					let v_w = matrix_Array[k].values[3][0];
-					let vectorAfterMper = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
-					tiny_Vector_Array.push(vectorAfterMper);
-				}
-				vector_Array.push(tiny_Vector_Array);
-				tiny_Vector_Array = [];
+			//console.log(clipVertices);
+			for (let k = 0; k < clipVertices.length; k++) {
+				beforeDrawLine[k] = Matrix.multiply(v_matrix, Mper, clipVertices[k]);
+				let v_x = beforeDrawLine[k].x;
+				let v_y = beforeDrawLine[k].y;
+				let v_z = beforeDrawLine[k].z;
+				let v_w = beforeDrawLine[k].w;
+				beforeDrawLine[k] = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 			}
-			mega_Vector_Array.push(vector_Array);
-			vector_Array = [];
-		}
-		//console.log(mega_Vector_Array);
-		for (let k = 0; k < scene.models.length; k++) {
-			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
-				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
-					DrawLine(mega_Vector_Array[k][m][n].x,
-							mega_Vector_Array[k][m][n].y,
-							mega_Vector_Array[k][m][n+1].x,
-							mega_Vector_Array[k][m][n+1].y);
-				}
+			for (let p = 0; p < beforeDrawLine.length; p+=2) {
+				DrawLine(beforeDrawLine[p].x, beforeDrawLine[p].y, beforeDrawLine[p+1].x, beforeDrawLine[p+1].y);
 			}
 		}
 	} else { // scene.view.type === 'parallel'
-		var vector_Array = [];
-		var matrix_Array = [];
-		var mega_Vector_Array = [];
-		var tiny_Vector_Array = [];
+		console.log("123123");
+		var beforeDrawLine = [];
 		var beforeClipping = [];
 		var clipVertices = [];
-		var tiny_clipVertices = [];
-		var mega_clipVertices = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
-		
 		for (let j = 0; j < scene.models.length; j++) {
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				beforeClipping[i] = Npar.mult(scene.models[j].vertices[i])
+				beforeClipping[i] = Matrix.multiply(Npar, scene.models[j].vertices[i]);
 			}
-			
 			for (let m = 0; m < scene.models[j].edges.length; m++) {
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
-					if (ans != null) {
-						tiny_clipVertices.push(ans[0]);
-						tiny_clipVertices.push(ans[1]);
+					if (ans !== null) {
+						clipVertices.push(ans[0]);
+						clipVertices.push(ans[1]);
 					}
 				}
-				clipVertices.push(tiny_clipVertices);
-				tiny_clipVertices = [];
 			}
-			mega_clipVertices[j] = clipVertices;
-			clipVertices = [];
-		}
-		//console.log(mega_clipVertices);
-		for (let j = 0; j < scene.models.length; j++) {
-			for (let i = 0; i < mega_clipVertices[j].length; i++) {
-				for (let k = 0; k < mega_clipVertices[j][i].length; k++) {
-					matrix_Array[k] = v_matrix.mult(Mpar.mult(mega_clipVertices[j][i][k]));
-					let v_x = matrix_Array[k].values[0][0];
-					let v_y = matrix_Array[k].values[1][0];
-					let v_z = matrix_Array[k].values[2][0];
-					let v_w = matrix_Array[k].values[3][0];
-					let vectorAfterMpar = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
-					tiny_Vector_Array.push(vectorAfterMpar);
-				}
-				vector_Array.push(tiny_Vector_Array);
-				tiny_Vector_Array = [];
+			for (let k = 0; k < clipVertices.length; k++) {
+				beforeDrawLine[k] = Matrix.multiply(v_matrix, Mpar, clipVertices[k]);
+				let v_x = beforeDrawLine[k].x;
+				let v_y = beforeDrawLine[k].y;
+				let v_z = beforeDrawLine[k].z;
+				let v_w = beforeDrawLine[k].w;
+				beforeDrawLine[k] = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 			}
-			mega_Vector_Array.push(vector_Array);
-			vector_Array = [];
-		}
-		//console.log(mega_Vector_Array);
-		for (let k = 0; k < scene.models.length; k++) {
-			for (let m = 0; m < mega_Vector_Array[k].length; m++) {
-				for (let n = 0; n < mega_Vector_Array[k][m].length-1; n++) {
-					DrawLine(mega_Vector_Array[k][m][n].x,
-							mega_Vector_Array[k][m][n].y,
-							mega_Vector_Array[k][m][n+1].x,
-							mega_Vector_Array[k][m][n+1].y);
-				}
+			for (let p = 0; p < beforeDrawLine.length; p+=2) {
+				DrawLine(beforeDrawLine[p].x, beforeDrawLine[p].y, beforeDrawLine[p+1].x, beforeDrawLine[p+1].y);
 			}
 		}
 	}
 }
 
-function GetOutcode(vertices,zmin){
-	var x = vertices.values[0][0];
-	var y = vertices.values[1][0];
-	var z = vertices.values[2][0];
+function GetOutcode(Vector4,view){
+	var x = Vector4.x;
+	var y = Vector4.y;
+	var z = Vector4.z;
+	var zmin = -(-z+view.clip[4])/(-z+view.clip[5]);
 	var code = 0;
-	if(scene.view.type == "perspective") {
+	if(view.type){
+	// left = 32
+	// right = 16
+	// bottom = 8
+	// top = 4
+	// front = 2
+	// back = 1										  
 		if(x<z) {
-			code += 32; //left
+			code += 32; 
 		} else if(x>-z) {
-			code += 16; //right
+			code += 16; 
 		} else {
 			code += 0;
 		}
-
+		
 		if(y<z) {
-			code += 8; //below
+			code += 8; 
 		} else if(y>-z) {
-			code += 4; //above
+			code += 4; 
 		} else {
 			code +=0;
 		}
-
+		
 		if(z>zmin) {
-			code += 2; //infront
+			code += 2; 
 		} else if(z<-1) {
-			code += 1; //inback
+			code += 1; 
 		} else {
 			code += 0;
 		}
 	} else { //parallel
 		if(x<-1) {
-			code += 32; //left
+			code += 32; 
 		} else if(x>1) {
-			code += 16; //right
+			code += 16; 
 		} else {
 			code += 0;
 		}
-
+		
 		if(y<-1) {
-			code += 8; //below
+			code += 8; 
 		} else if(y>1) {
-			code += 4; //above
+			code += 4; 
 		} else {
 			code +=0;
 		}
-
+		
 		if(z>0) {
-			code += 2; //infront
+			code += 2; 
 		} else if(z<-1) {
-			code += 1; //inback
+			code += 1; 
 		} else {
 			code += 0;
 		}
 	}
-	//console.log(code);
 	return code;
 }
-
 function clipping(pt0,pt1,view){
 	var left = 32;
 	var right = 16;
 	var bottom = 8;
 	var top = 4;
-	var near = 2;
-	var far = 1;
+	var front = 2;
+	var back = 1;
 	var result = [];
 	var zmin = -(-view.prp.z+view.clip[4])/(-view.prp.z+view.clip[5]);
-	var codeA = GetOutcode(pt0,zmin);
-	var codeB = GetOutcode(pt1,zmin);
-	var deltax = pt1.values[0][0]-pt0.values[0][0];
-	var deltay = pt1.values[1][0]-pt0.values[1][0];
-	var deltaz = pt1.values[2][0]-pt0.values[2][0];
+	var codeA = GetOutcode(pt0,view);
+	var codeB = GetOutcode(pt1,view);
+	var deltax = pt1.x-pt0.x;
+	var deltay = pt1.y-pt0.y;
+	var deltaz = pt1.z-pt0.z;
 	var done = false;
-	
+	var t;
 	while(!done){
 		var OR = (codeA | codeB);
 		var And = (codeA & codeB);
-		if(OR == 0) {
+		if(OR == 0){
 			done = true;
-			result[0] = pt0;
-			result[1] = pt1;
-			//console.log(result);
+			result[0] = Vector4(pt0.x,pt0.y,pt0.z,1);
+			result[1] = Vector4(pt1.x,pt1.y,pt1.z,1);
+			
 			return result;
 		} else if(And != 0) {
 			done = true;
-			result = null;
+			console.log("11111111");
+			return null;
 		} else {
-			var select_pt = new Matrix(4,4);
+			var select_pt;
 			var select_code;
-			if(codeA>0) {
-				select_pt.values = pt0;
+			if(codeA > 0) {
+				select_pt = pt0;
 				select_code = codeA;
 			} else {
-				select_pt.values = pt1;
+				select_pt = pt1;
 				select_code = codeB;
 			}
-			let t;
-			if((select_code & left) === left) {
-				if (view.type == 'perspective') {
-					t = (-select_pt.values[0][0]+select_pt.values[0][2])/(deltax-deltaz);
+			if((select_code & left) === left){
+				if (view.type === 'perspective') {
+					t = (-select_pt.x+select_pt.z)/(deltax-deltaz);
 				} else {
-					t = (-1-select_pt.values[0][0])/deltax;
+					t = (-select_pt.x-1)/(deltax);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
-			} else if((select_code & right) === right) {
-				if (view.type == 'perspective') {
-					t = (select_pt.values[0][0]+select_pt.values[0][2])/(-deltax-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & right) === right){
+				if (view.type === 'perspective') {
+					t = (select_pt.x+select_pt.z)/(-deltax-deltaz);
 				} else {
-					t = (1-select_pt.values[0][0])/deltax;
+					t = (1-select_pt.x)/(deltax);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
-			} else if((select_code & bottom) === bottom) {
-				if (view.type == 'perspective') {
-					t = (-select_pt.values[0][1]+select_pt.values[0][2])/(deltay-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & bottom) === bottom){
+				if (view.type === 'perspective') {
+					t = (-select_pt.y+select_pt.z)/(deltay-deltaz);
 				} else {
-					t = (-1-select_pt.values[0][1])/deltay;
+					t = (-select_pt.y-1)/(deltay);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
-			} else if((select_code & top) === top) {
-				if (view.type == 'perspective') {
-					t = (select_pt.values[0][1]+select_pt.values[0][2])/(-deltay-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & top) === top){
+				if (view.type === 'perspective') {
+					t = (select_pt.y+select_pt.z)/(-deltay-deltaz);
 				} else {
-					t = (1-select_pt.values[0][1])/deltay;
+					t = (1-select_pt.y)/(deltay);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
-			} else if((select_code & near) === near) {
-				if (view.type == 'perspective') {
-					t = (select_pt.values[0][2]-zmin)/(-deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & front) === front){
+				if (view.type === 'perspective') {
+					t = (select_pt.z-zmin)/(-deltaz);
 				} else {
-					t = (-select_pt.values[0][2])/deltaz;
+					t = (-select_pt.z)/(deltaz);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
-			} else if((select_code & far) === far) {
-				if (view.type == 'perspective') {
-					t = (-select_pt.values[0][2]-1)/(deltaz);
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
+			}else if ((select_code & back) === back){
+				if (view.type === 'perspective') {
+					t = (-select_pt.z-1)/(deltaz);
 				} else {
-					t = (-1-select_pt.values[0][2])/deltaz;
+					t = (-1-select_pt.z)/(deltaz);
 				}
-				select_pt.values[0][0] = select_pt.values[0][0]+t*deltax;
-				select_pt.values[0][1] = select_pt.values[0][1]+t*deltay;
-				select_pt.values[0][2] = select_pt.values[0][2]+t*deltaz;
+				select_pt.x = select_pt.x+t*deltax;
+				select_pt.y = select_pt.y+t*deltay;
+				select_pt.z = select_pt.z+t*deltaz;
 			}
-			select_code = GetOutcode(select_pt,zmin);
-			if(codeA>0) {
+			select_code = GetOutcode(select_pt,view);
+			if(codeA > 0){
 				codeA = select_code;
-				pt0.values = select_pt;
-			} else {
+			}else{
 				codeB = select_code;
-				pt1.values = select_pt;
 			}
 		}
 	}
