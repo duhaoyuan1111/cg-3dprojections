@@ -134,51 +134,51 @@ function GetOutcode(Vector4,view){
 	var z = Vector4.z;
 	var zmin = -(-z+view.clip[4])/(-z+view.clip[5]);
 	var code = 0;
-	if(view.type==='perspective'){									  
+	if(view.type==='perspective'){
 		if(x<z) {
-			code += 32; 
+			code += 32;
 		} else if(x>-z) {
-			code += 16; 
+			code += 16;
 		} else {
 			code += 0;
 		}
-		
+
 		if(y<z) {
-			code += 8; 
+			code += 8;
 		} else if(y>-z) {
-			code += 4; 
+			code += 4;
 		} else {
 			code +=0;
 		}
-		
+
 		if(z>zmin) {
-			code += 2; 
+			code += 2;
 		} else if(z<-1) {
-			code += 1; 
+			code += 1;
 		} else {
 			code += 0;
 		}
 	} else { //parallel
 		if(x<-1) {
-			code += 32; 
+			code += 32;
 		} else if(x>1) {
-			code += 16; 
+			code += 16;
 		} else {
 			code += 0;
 		}
-		
+
 		if(y<-1) {
-			code += 8; 
+			code += 8;
 		} else if(y>1) {
-			code += 4; 
+			code += 4;
 		} else {
 			code +=0;
 		}
-		
+
 		if(z>0) {
-			code += 2; 
+			code += 2;
 		} else if(z<-1) {
-			code += 1; 
+			code += 1;
 		} else {
 			code += 0;
 		}
@@ -470,8 +470,45 @@ function OnKeyDown(event) {
             scene.view.vrp = scene.view.vrp.add(scene.view.vpn)
             DrawScene();
             break;
+
+        case 88: // x key rotates around x axis
+            console.log("x");
+            break;
+        case 89: // y key rotates about y axis
+            console.log("y");
+            break;
+        case 90: // z key rotates about z axis
+            console.log("z");
+            break;
     }
 }
+
+/* ----ANIMATION-----
+var start_time;
+var prev_time;
+
+function Animate(timestamp) {
+    // step 1: calculate time (time since start) and/or delta time (time between successive frames)
+    // step 2: transform models based on time or delta time
+    // step 3: draw scene
+    // step 4: request next animation frame (recursively calling same function)
+
+    var time = time_stamp - start_time;
+    var dt = timestamp - prev_time;
+    prev_time = time_stamp;
+
+    // ... step 2
+
+    DrawScene();
+
+    window.requestAnimationFrame(Animate);
+}
+
+start_time = performance.now(); // current timestamp in milliseconds
+prev_time = start_time;
+window.requestAnimationFrame(Animate);
+
+*/
 
 // Draw black 2D line with red endpoints
 function DrawLine(x1, y1, x2, y2) {
