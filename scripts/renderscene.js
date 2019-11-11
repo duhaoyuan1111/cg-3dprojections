@@ -68,23 +68,20 @@ function DrawScene() {
 		var clipVertices = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mper = mat4x4mper(-1);
-		for (let j = 0; j < scene.models.length; j++) {
+		for (let j = 0; j < scene.models.length; j++) { // each model do things below
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				beforeClipping[i] = Matrix.multiply(Nper, scene.models[j].vertices[i]);
 			}
-			//console.log(beforeClipping);
-			for (let m = 0; m < scene.models[j].edges.length; m++) {
+			for (let m = 0; m < scene.models[j].edges.length; m++) { // Clipping all Vertices
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
 					if (ans !== null) {
 						clipVertices.push(ans[0]);
 						clipVertices.push(ans[1]);
-						
 					}
 				}
 			}
-			//console.log(clipVertices);
-			for (let k = 0; k < clipVertices.length; k++) {
+			for (let k = 0; k < clipVertices.length; k++) { // mult v_matrix
 				beforeDrawLine[k] = Matrix.multiply(v_matrix, Mper, clipVertices[k]);
 				let v_x = beforeDrawLine[k].x;
 				let v_y = beforeDrawLine[k].y;
@@ -92,23 +89,22 @@ function DrawScene() {
 				let v_w = beforeDrawLine[k].w;
 				beforeDrawLine[k] = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 			}
-			for (let p = 0; p < beforeDrawLine.length; p+=2) {
+			for (let p = 0; p < beforeDrawLine.length; p+=2) { // draw lines
 				DrawLine(beforeDrawLine[p].x, beforeDrawLine[p].y, beforeDrawLine[p+1].x, beforeDrawLine[p+1].y);
 			}
 		}
 	} else { // scene.view.type === 'parallel'
-		console.log("123123");
 		var beforeDrawLine = [];
 		var beforeClipping = [];
 		var clipVertices = [];
 		var Npar = mat4x4parallel(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mpar = new Matrix(4,4);
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
-		for (let j = 0; j < scene.models.length; j++) {
+		for (let j = 0; j < scene.models.length; j++) { // each model do things below
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
 				beforeClipping[i] = Matrix.multiply(Npar, scene.models[j].vertices[i]);
 			}
-			for (let m = 0; m < scene.models[j].edges.length; m++) {
+			for (let m = 0; m < scene.models[j].edges.length; m++) { // Clipping all Vertices
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
 					var ans = clipping(beforeClipping[scene.models[j].edges[m][n]],beforeClipping[scene.models[j].edges[m][n+1]],scene.view);
 					if (ans !== null) {
@@ -117,7 +113,7 @@ function DrawScene() {
 					}
 				}
 			}
-			for (let k = 0; k < clipVertices.length; k++) {
+			for (let k = 0; k < clipVertices.length; k++) { // mult v_matrix
 				beforeDrawLine[k] = Matrix.multiply(v_matrix, Mpar, clipVertices[k]);
 				let v_x = beforeDrawLine[k].x;
 				let v_y = beforeDrawLine[k].y;
@@ -125,7 +121,7 @@ function DrawScene() {
 				let v_w = beforeDrawLine[k].w;
 				beforeDrawLine[k] = Vector4(v_x/v_w, v_y/v_w, v_z/v_w, v_w/v_w);
 			}
-			for (let p = 0; p < beforeDrawLine.length; p+=2) {
+			for (let p = 0; p < beforeDrawLine.length; p+=2) { // draw lines
 				DrawLine(beforeDrawLine[p].x, beforeDrawLine[p].y, beforeDrawLine[p+1].x, beforeDrawLine[p+1].y);
 			}
 		}
@@ -138,13 +134,7 @@ function GetOutcode(Vector4,view){
 	var z = Vector4.z;
 	var zmin = -(-z+view.clip[4])/(-z+view.clip[5]);
 	var code = 0;
-	if(view.type){
-	// left = 32
-	// right = 16
-	// bottom = 8
-	// top = 4
-	// front = 2
-	// back = 1										  
+	if(view.type==='perspective'){									  
 		if(x<z) {
 			code += 32; 
 		} else if(x>-z) {
@@ -196,6 +186,7 @@ function GetOutcode(Vector4,view){
 	return code;
 }
 function clipping(pt0,pt1,view){
+	// Create a brand new copy for the pt0 and pt1 is necessary.
 	var left = 32;
 	var right = 16;
 	var bottom = 8;
