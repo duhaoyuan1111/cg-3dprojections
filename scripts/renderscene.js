@@ -473,6 +473,7 @@ function OnKeyDown(event) {
 
         case 88: // x key rotates around x axis
             console.log("x");
+//            Animate(performance.now());
             break;
         case 89: // y key rotates about y axis
             console.log("y");
@@ -483,7 +484,7 @@ function OnKeyDown(event) {
     }
 }
 
-/* ----ANIMATION-----
+//----ANIMATION-----
 var start_time;
 var prev_time;
 
@@ -493,10 +494,10 @@ function Animate(timestamp) {
     // step 3: draw scene
     // step 4: request next animation frame (recursively calling same function)
 
-    var time = time_stamp - start_time;
+    var time = timestamp - start_time;
     var dt = timestamp - prev_time;
-    prev_time = time_stamp;
-
+    prev_time = timestamp;
+//    console.log(start_time);
     // ... step 2
 
     DrawScene();
@@ -508,7 +509,7 @@ start_time = performance.now(); // current timestamp in milliseconds
 prev_time = start_time;
 window.requestAnimationFrame(Animate);
 
-*/
+
 
 // Draw black 2D line with red endpoints
 function DrawLine(x1, y1, x2, y2) {
