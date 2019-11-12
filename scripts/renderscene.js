@@ -394,29 +394,29 @@ function LoadNewScene() {
 				var radius = scene.models[i].radius;
 				// vertices
 				scene.models[i].vertices = [];
-				for (let k = 0; k < stacks+2; k++) {
+				for (let k = 0; k < stacks+1; k++) {
 					for (let j = 0; j < slices; j++) {
-						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.cos(j*2*Math.PI/slices),
-															  center[1]+radius*Math.cos(k*Math.PI/(stacks+1)),
-															  center[2]+radius*Math.sin(k*Math.PI/(stacks+1))*Math.sin(j*2*Math.PI/slices),
+						scene.models[i].vertices.push(Vector4(center[0]+radius*Math.sin(k*Math.PI/(stacks))*Math.cos(j*2*Math.PI/slices),
+															  center[1]+radius*Math.cos(k*Math.PI/(stacks)),
+															  center[2]+radius*Math.sin(k*Math.PI/(stacks))*Math.sin(j*2*Math.PI/slices),
 															  1));
 					}
 				}
 				console.log(scene.models[i].vertices);
 				// edges
 				scene.models[i].edges = [];
-				for (let m = 0; m < slices+stacks+2; m++) {
+				for (let m = 0; m < slices+stacks+1; m++) {
 					scene.models[i].edges[m] = [];
 				}
 				var count = 0;
-				for (let n = 0; n < stacks+2; n++) {
+				for (let n = 0; n < stacks+1; n++) {
 					for (let m = 0; m < slices; m++) {
 						scene.models[i].edges[m][n] = count;
 						count++;
 					}
 				}
 				var counter = 0;
-				for (let j = slices; j < slices+stacks+2; j++) {
+				for (let j = slices; j < slices+stacks+1; j++) {
 					for (let n = 0; n < slices; n++) {
 						scene.models[i].edges[j][n] = counter;
 						counter++;
