@@ -50,10 +50,36 @@ function Init() {
         ]
     };
 
+    calculateCenter();
+
     // event handler for pressing arrow keys
     document.addEventListener('keydown', OnKeyDown, false);
 
     DrawScene();
+}
+
+function calculateCenter(){
+    var xmin, xmax, ymin, ymax, zmin, zmax;
+    for (let j = 0; j < scene.models.length; j++) { // each model do things below
+        xmin = scene.models[j].vertices[0].x;
+        xmax = scene.models[j].vertices[0].x;
+        ymin = scene.models[j].vertices[0].y;
+        ymax = scene.models[j].vertices[0].y;
+        zmin = scene.models[j].vertices[0].z;
+        zmax = scene.models[j].vertices[0].z;
+
+        for (let i = 1; i < scene.models[j].vertices.length; i++) {
+            if(scene.models[j].vertices[i].x < xmin) xmin = scene.models[j].vertices[i].x;
+            if(scene.models[j].vertices[i].x > xmax) xmax = scene.models[j].vertices[i].x;
+            if(scene.models[j].vertices[i].y < ymin) ymin = scene.models[j].vertices[i].y;
+            if(scene.models[j].vertices[i].y > ymax) ymax = scene.models[j].vertices[i].y;
+            if(scene.models[j].vertices[i].z < zmin) zmin = scene.models[j].vertices[i].z;
+            if(scene.models[j].vertices[i].z > zmax) zmax = scene.models[j].vertices[i].z;
+        }
+
+        scene.models[j].middle = Vector4((xmin+xmax)/2, (ymin+ymax)/2, (zmin+zmax)/2, 1);
+    }
+
 }
 
 // Main drawing code here! Use information contained in variable `scene`
@@ -70,7 +96,7 @@ function DrawScene() {
 		var Mper = mat4x4mper(-1);
 		for (let j = 0; j < scene.models.length; j++) { // each model do things below
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				beforeClipping[i] = Matrix.multiply(Nper, scene.models[j].vertices[i]);
+				beforeClipping[i] = Matrix.multiply(Nper, scene.models[j].transform, scene.models[j].vertices[i]);
 			}
 			for (let m = 0; m < scene.models[j].edges.length; m++) { // Clipping all Vertices
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
@@ -102,7 +128,7 @@ function DrawScene() {
 		Mpar.values = [[1,0,0,0],[0,1,0,0],[0,0,0,0],[0,0,0,1]];
 		for (let j = 0; j < scene.models.length; j++) { // each model do things below
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
-				beforeClipping[i] = Matrix.multiply(Npar, scene.models[j].vertices[i]);
+				beforeClipping[i] = Matrix.multiply(Npar, scene.models[j].transform, scene.models[j].vertices[i]);
 			}
 			for (let m = 0; m < scene.models[j].edges.length; m++) { // Clipping all Vertices
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
@@ -430,7 +456,7 @@ function LoadNewScene() {
                                                  1);
             }
         }
-
+        calculateCenter();
         DrawScene();
     };
     reader.readAsText(scene_file.files[0], "UTF-8");
@@ -470,17 +496,6 @@ function OnKeyDown(event) {
             scene.view.vrp = scene.view.vrp.add(scene.view.vpn)
             DrawScene();
             break;
-
-        case 88: // x key rotates around x axis
-            console.log("x");
-//            Animate(performance.now());
-            break;
-        case 89: // y key rotates about y axis
-            console.log("y");
-            break;
-        case 90: // z key rotates about z axis
-            console.log("z");
-            break;
     }
 }
 
@@ -497,19 +512,29 @@ function Animate(timestamp) {
     var time = timestamp - start_time;
     var dt = timestamp - prev_time;
     prev_time = timestamp;
-//    console.log(start_time);
+
     // ... step 2
+
+
     for (let j = 0; j < scene.models.length; j++) { // each model do things below
-        for (let i = 0; i < scene.models[j].vertices.length; i++) {
-    //        console.log("h");
-            var rotatedvertex = mat4x4rotatex(3).mult(scene.models[j].vertices[i]);
-    //        console.log(rotatedvertex.values[0]);
-            scene.models[j].vertices[i].x = rotatedvertex.values[0];
-            scene.models[j].vertices[i].y = rotatedvertex.values[1];
-            scene.models[j].vertices[i].z = rotatedvertex.values[2];
-            scene.models[j].vertices[i].w = rotatedvertex.values[3];
+        //console.log("animate", j);
+        var translateCenter = mat4x4translate(-scene.models[j].middle.x, -scene.models[j].middle.y, -scene.models[j].middle.z);
+        var rotation
+        if(scene.models[j].hasOwnProperty("animation")){
+//            console.log("animate", j);
+            if(scene.models[j].animation.axis == "x") rotation = mat4x4rotatex(((scene.models[j].animation.rps*360)*(time/1000)));
+            else if(scene.models[j].animation.axis == "y") rotation = mat4x4rotatey(((scene.models[j].animation.rps*360)*(time/1000)));
+            else rotation = mat4x4rotatez(((scene.models[j].animation.rps*360)*(time/1000)));
 
         }
+        else{
+            rotation = mat4x4identity();
+        }
+
+        var translateBack = mat4x4translate(scene.models[j].middle.x, scene.models[j].middle.y, scene.models[j].middle.z);
+        var modelTransform = Matrix.multiply(translateBack, rotation, translateCenter);
+        scene.models[j].transform = modelTransform;
+
     }
 
     DrawScene();
