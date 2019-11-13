@@ -499,6 +499,18 @@ function Animate(timestamp) {
     prev_time = timestamp;
 //    console.log(start_time);
     // ... step 2
+    for (let j = 0; j < scene.models.length; j++) { // each model do things below
+        for (let i = 0; i < scene.models[j].vertices.length; i++) {
+    //        console.log("h");
+            var rotatedvertex = mat4x4rotatex(3).mult(scene.models[j].vertices[i]);
+    //        console.log(rotatedvertex.values[0]);
+            scene.models[j].vertices[i].x = rotatedvertex.values[0];
+            scene.models[j].vertices[i].y = rotatedvertex.values[1];
+            scene.models[j].vertices[i].z = rotatedvertex.values[2];
+            scene.models[j].vertices[i].w = rotatedvertex.values[3];
+
+        }
+    }
 
     DrawScene();
 
