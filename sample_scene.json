@@ -31,7 +31,11 @@
             "center": [16, 15, -30],
             "radius": 3,
             "height": 8,
-            "sides": 9
+            "sides": 9,
+	    "animation": {
+                "axis": "z",
+                "rps": 0.5
+            }
         },
 		{
             "type": "sphere",
