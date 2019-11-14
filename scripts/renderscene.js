@@ -78,6 +78,7 @@ function calculateCenter(){
         }
 
         scene.models[j].middle = Vector4((xmin+xmax)/2, (ymin+ymax)/2, (zmin+zmax)/2, 1);
+        scene.models[j].transform = mat4x4identity();
     }
 
 }
@@ -94,9 +95,12 @@ function DrawScene() {
 		var clipVertices = [];
 		var Nper = mat4x4perspective(scene.view.vrp, scene.view.vpn, scene.view.vup, scene.view.prp, scene.view.clip);
 		var Mper = mat4x4mper(-1);
+
 		for (let j = 0; j < scene.models.length; j++) { // each model do things below
 			for (let i = 0; i < scene.models[j].vertices.length; i++) {
+
 				beforeClipping[i] = Matrix.multiply(Nper, scene.models[j].transform, scene.models[j].vertices[i]);
+
 			}
 			for (let m = 0; m < scene.models[j].edges.length; m++) { // Clipping all Vertices
 				for (let n = 0; n < scene.models[j].edges[m].length-1; n++) {
@@ -321,7 +325,7 @@ function clipping(pt0,pt1,view){
 function LoadNewScene() {
     var scene_file = document.getElementById('scene_file');
 
-    console.log(scene_file.files[0]);
+//    console.log(scene_file.files[0]);
 
     var reader = new FileReader();
     reader.onload = (event) => {
@@ -428,7 +432,7 @@ function LoadNewScene() {
 															  1));
 					}
 				}
-				console.log(scene.models[i].vertices);
+	//			console.log(scene.models[i].vertices);
 				// edges
 				scene.models[i].edges = [];
 				for (let m = 0; m < slices+stacks+1; m++) {
@@ -466,7 +470,7 @@ function LoadNewScene() {
 function OnKeyDown(event) {
     switch (event.keyCode) {
         case 37: // LEFT Arrow translate the VRP along the u-axis
-            console.log("left");
+            //console.log("left");
             scene.view.vpn.normalize();
             var u_axis = scene.view.vup.cross(scene.view.vpn);
 			u_axis.normalize();
@@ -475,14 +479,14 @@ function OnKeyDown(event) {
             break;
 
         case 38: // UP Arrow translate vrp along n-axis
-            console.log("up");
+            //console.log("up");
             scene.view.vpn.normalize();
             scene.view.vrp = scene.view.vrp.subtract(scene.view.vpn);
             DrawScene();
             break;
 
         case 39: // RIGHT  translate the VRP along the u-axis
-            console.log("right");
+            //console.log("right");
             scene.view.vpn.normalize();
             var u_axis = scene.view.vup.cross(scene.view.vpn);
 			u_axis.normalize();
@@ -491,7 +495,7 @@ function OnKeyDown(event) {
 
             break;
         case 40: // DOWN Arrow translate vrp along n-axis
-            console.log("down");
+        //    console.log("down");
             scene.view.vpn.normalize();
             scene.view.vrp = scene.view.vrp.add(scene.view.vpn)
             DrawScene();
